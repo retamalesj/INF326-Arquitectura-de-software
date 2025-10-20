@@ -1,12 +1,17 @@
 services:
   presencia:
     build: .
+    container_name: presence_service
     ports:
       - "5002:80"
     volumes:
       - .:/code
-    links:
-      - demo_04_service_02_mongodb
+    depends_on:
+      - mongodb_presencia
+      - rabbitmq
+    networks:
+      - demo_04
+
   mongodb_presencia:
     image: mongo:7
     container_name: presence_mongo
@@ -14,11 +19,20 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - demo_04
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: presence_rabbitmq
+    ports:
+      - "5672:5672"   # Puerto para conexion AMQP
+      - "15672:15672" # Panel web RabbitMQ
+    networks:
+      - demo_04
 
 volumes:
   mongo_data:
 
 networks:
-  default:
-    name: demo_04
+  demo_04:
     external: true
