@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 import aio_pika
 import json
@@ -13,6 +14,19 @@ app = FastAPI(
     description="API para registrar, actualizar y consultar el estado de conexión de los usuarios.",
     version="0.0.1"
 )
+
+class UserPresence(BaseModel):
+    id: str
+    userId: str
+    device: str
+    status: str
+    connectedAt: datetime
+    lastSeen: datetime
+
+    def __init__(self, **kargs):
+        if "_id" in kargs:
+            kargs["id"] = str(kargs["_id"])
+        BaseModel.__init__(self, **kargs)
 
 class UserConnection(BaseModel):
     userId: str
@@ -134,26 +148,44 @@ async def update_presence(
 
     return {
         "status": "OK",
-        "message": "Se procesó correctamente"
+        "message": "Se procesó correctamente",
+        "data": None
     }
 
 @app.get("/presence/{userId}")
-async def get_user_presence(userId: str, update: UserStatusUpdate):
-    status = []
+async def get_user_presence(userId: str):
+    user = await presences_collection.find_one({ "userId": userId })
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
     return {
-        "userId": userId,
-        "status": status
+        "status": "OK",
+        "message": "Usuario encontrado correctamente",
+        "data": UserPresence(**user)
     }
 
-@app.get("/presence", summary="Listar todos los usuarios online", response_model=List[Dict])
-async def list_online_users():
-    cursor = presences_collection .find({"status": "online"})
-    users = []
-    async for doc in cursor:
-        users.append({"userId": doc["userId"], "status": doc["status"]})
-    return users
+@app.get("/presence", summary="Listar todos los usuarios")
+async def list_users(status: Optional[str] = None):
+    base_filter = {}
+    if status:
+        base_filter["status"] = status
 
+    users = await presences_collection.find(base_filter).to_list(length=None)
+    
+    return {
+        "status": "OK",
+        "message": "Usuarios listados correctamente",
+        "data": [UserPresence(**user) for user in users]
+    }    
+    
 @app.delete("/presence/{userId}")
 async def delete_presence(userId: str):
-
-    return {"message": f"User {userId} disconnected"}
+    user = await presences_collection.delete_one({"userId": userId})
+    if user.deleted_count == 0:
+        raise HTTPException(status_code=404, detail=f"Usuario {userId} no encontrado")
+    
+    return {
+        "status": "OK",
+        "message": "Usuario borrado de la base de datos de presencia.",
+        "data": None
+    }
