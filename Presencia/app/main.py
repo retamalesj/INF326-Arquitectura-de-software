@@ -1,11 +1,9 @@
 from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator
 from datetime import datetime, timedelta
-from typing import Dict, Optional, List
-from bson import ObjectId
+from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorClient
-import aio_pika
-import json
+from enum import Enum
 
 from .events import Emit
 
@@ -15,11 +13,21 @@ app = FastAPI(
     version="0.0.1"
 )
 
+class StatusEnum(str, Enum):
+    online = "online"
+    offline = "offline"
+
+class DeviceEnum(str, Enum):
+    web = "web"
+    mobile = "mobile"
+    desktop = "desktop"
+    unknown = "unknown"
+
 class UserPresence(BaseModel):
     id: str
     userId: str
-    device: str
-    status: str
+    device: DeviceEnum
+    status: StatusEnum
     connectedAt: datetime
     lastSeen: datetime
 
@@ -30,12 +38,12 @@ class UserPresence(BaseModel):
 
 class UserConnection(BaseModel):
     userId: str
-    device: Optional[str] = "unknown"
+    device: Optional[DeviceEnum] = DeviceEnum.unknown
     ip: Optional[str] = None
 
 # Duda a seguir con respecto de heartbeat. Tal vez sea necesario otra manera.
 class UserStatusUpdate(BaseModel):
-    status: Optional[str] = None
+    status: Optional[StatusEnum] = None
     heartbeat: Optional[bool] = False
 
     @model_validator(mode="after")
@@ -60,9 +68,10 @@ async def mark_offline_if_inactive(user):
     last_seen = user.get("lastSeen")
     if last_seen:
         diff = datetime.utcnow() - last_seen
-        if diff > HEARTBEAT_TIMEOUT and user["status"] != "offline":
-            await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": "offline"}})
-            await emit_events.send(user["userId"], "offline", { "status": "offline" })
+        if diff > HEARTBEAT_TIMEOUT and user["status"] != StatusEnum.offline.value:
+            status_offline: StatusEnum = StatusEnum.offline
+            await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": status_offline.value}})
+            await emit_events.send(user["userId"], status_offline.value, { "status": status_offline.value })
 
 @app.post("/presence", summary="Registrar conexión a un usuario.")
 async def register_presence(
@@ -77,10 +86,12 @@ async def register_presence(
     )
 ):
     now = datetime.utcnow()
+    status_online: StatusEnum = StatusEnum.online
+
     presence_data = {
         "userId": data.userId,
         "device": data.device,
-        "status": "online",
+        "status": status_online.value,
         "connectedAt": now.isoformat(),
         "lastSeen": now.isoformat()
     }
@@ -91,9 +102,13 @@ async def register_presence(
         upsert=True
     )
 
-    await emit_events.send(data.userId, "online", presence_data)
+    await emit_events.send(data.userId, status_online.value, presence_data)
 
-    return presence_data
+    return {
+        "status": "OK",
+        "message": "",
+        "data": presence_data
+    }
 
 @app.patch("/presence/{userId}", summary="Actualizar estado")
 async def update_presence(
@@ -135,13 +150,14 @@ async def update_presence(
         update_data["lastSeen"] = now
 
     if update.status:
-        update_data["status"] = update.status
+        status: StatusEnum = update.status
+        update_data["status"] = status.value
         update_data["lastSeen"] = now
 
     await presences_collection.update_one({ "userId": userId }, {"$set": update_data })
 
     if update.status:
-        await emit_events.send(userId, update.status, { "status": update.status })
+        await emit_events.send(userId, status.value, { "status": status.value })
 
     if update.heartbeat:
         await mark_offline_if_inactive(user)
@@ -165,10 +181,10 @@ async def get_user_presence(userId: str):
     }
 
 @app.get("/presence", summary="Listar todos los usuarios")
-async def list_users(status: Optional[str] = None):
+async def list_users(status: Optional[StatusEnum] = None):
     base_filter = {}
     if status:
-        base_filter["status"] = status
+        base_filter["status"] = status.value
 
     users = await presences_collection.find(base_filter).to_list(length=None)
     
