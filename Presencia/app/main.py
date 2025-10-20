@@ -73,6 +73,17 @@ async def mark_offline_if_inactive(user):
             await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": status_offline.value}})
             await emit_events.send(user["userId"], status_offline.value, { "status": status_offline.value })
 
+@app.get("/presence/health", summary="Verificar estado del servicio", tags=["Sistema"])
+async def health_check():
+    try:
+        await db.command("ping")
+        return {
+            "status": "OK",
+            "message": "Servicio operativo"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Error de conexión con MongoDB: {str(e)}")
+
 @app.post("/presence", summary="Registrar conexión a un usuario.")
 async def register_presence(
     data: UserConnection = Body(
@@ -118,6 +129,51 @@ async def register_presence(
         "status": "OK",
         "message": "",
         "data": presence_data
+    }
+
+@app.get("/presence", summary="Listar todos los usuarios")
+async def list_users(status: Optional[StatusEnum] = None):
+    base_filter = {}
+    if status:
+        base_filter["status"] = status.value
+
+    users = await presences_collection.find(base_filter).to_list(length=None)
+
+    return {
+        "status": "OK",
+        "message": "Usuarios listados correctamente",
+        "data": {
+            "total_users": len(users),
+            "users": [UserPresence(**user) for user in users]
+        }
+    }    
+
+@app.get("/presence/stats", summary="Obtener estadísticas de presencia")
+async def get_presence_stats():
+    online_count = await presences_collection.count_documents({"status": StatusEnum.online.value})
+    offline_count = await presences_collection.count_documents({"status": StatusEnum.offline.value})
+    total = online_count + offline_count
+
+    return {
+        "status": "OK",
+        "message": "Estadísticas de presencia obtenidas correctamente",
+        "data": {
+            "total": total,
+            "online": online_count,
+            "offline": offline_count
+        }
+    }
+
+@app.get("/presence/{userId}", summary="Obtener la presencia de un usuario")
+async def get_user_presence(userId: str):
+    user = await presences_collection.find_one({ "userId": userId })
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return {
+        "status": "OK",
+        "message": "Usuario encontrado correctamente",
+        "data": UserPresence(**user)
     }
 
 @app.patch("/presence/{userId}", summary="Actualizar estado")
@@ -183,32 +239,6 @@ async def update_presence(
         "data": None
     }
 
-@app.get("/presence/{userId}")
-async def get_user_presence(userId: str):
-    user = await presences_collection.find_one({ "userId": userId })
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-    return {
-        "status": "OK",
-        "message": "Usuario encontrado correctamente",
-        "data": UserPresence(**user)
-    }
-
-@app.get("/presence", summary="Listar todos los usuarios")
-async def list_users(status: Optional[StatusEnum] = None):
-    base_filter = {}
-    if status:
-        base_filter["status"] = status.value
-
-    users = await presences_collection.find(base_filter).to_list(length=None)
-    
-    return {
-        "status": "OK",
-        "message": "Usuarios listados correctamente",
-        "data": [UserPresence(**user) for user in users]
-    }    
-    
 @app.delete("/presence/{userId}")
 async def delete_presence(userId: str):
     user = await presences_collection.delete_one({"userId": userId})
