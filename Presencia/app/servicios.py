@@ -75,6 +75,18 @@ async def emitir_evento(event_type: str, data: dict):
     await rabbit_channel.default_exchange.publish(message, routing_key=RABBITMQ_QUEUE)
     print(f"[EVENTO] {event_type} publicado en RabbitMQ -> {payload}")
 
+async def marcar_offline_si_inactivo(userId: str):
+    doc = await collection.find_one({"userId": userId})
+    if not doc:
+        return
+
+    last_seen = doc.get("lastSeen")
+    if last_seen:
+        diff = datetime.utcnow() - last_seen
+        if diff > HEARTBEAT_TIMEOUT and doc["status"] != "offline":
+            await collection.update_one({"userId": userId}, {"$set": {"status": "offline"}})
+            await emitir_evento("presence.user.offline", {"userId": userId})
+
 #Empezando con los endpoints:
 @app.post("/presence", summary="Registrar conexion")
 async def register_presence(data: Presencia):
@@ -95,18 +107,6 @@ async def register_presence(data: Presencia):
 
     await emitir_evento("presence.user.online", {"userId": data.userId})
     return {"userId": data.userId, "status": "online", "connectedAt": now.isoformat() + "Z"}
-
-async def marcar_offline_si_inactivo(userId: str):
-    doc = await collection.find_one({"userId": userId})
-    if not doc:
-        return
-
-    last_seen = doc.get("lastSeen")
-    if last_seen:
-        diff = datetime.utcnow() - last_seen
-        if diff > HEARTBEAT_TIMEOUT and doc["status"] != "offline":
-            await collection.update_one({"userId": userId}, {"$set": {"status": "offline"}})
-            await emitir_evento("presence.user.offline", {"userId": userId})
 
 @app.patch("/presence/{userId}", summary="Actualizar estado")
 async def update_presence(userId: str, update: ActualizacionEstado):
