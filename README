@@ -1,43 +1,6 @@
-⚙️ Endpoints del Servicio de Presencia
-Método <br>
-Endpoint <br>
-Descripción  <br>
-Entrada (body / params) <
-Respuesta (JSON) 
-POST /presence <br>
-Registrar que un usuario se conectó (cambia a online). <br>
-json { "userId": "u12345", "device": "web", "ip": "192.168.0.10" } <br>
-json { "userId": "u12345", "status": "online", "connectedAt": "2025-10-17T17:55:00Z" }
- <br>
+# Grupo 5 - Servicio de presencia
+  * Administra estados de conexión de usuarios (online/offline).
+  * Emite eventos de presencia para enriquecer otros servicios.
 
-PATCH /presence/{userId}
-Actualizar el estado (por ejemplo, marcarlo offline).
-json { "status": "offline" }
-json { "userId": "u12345", "status": "offline", "lastSeen": "2025-10-17T18:00:00Z" }
-
- <br>
-GET /presence/{userId}
-Consultar el estado actual de un usuario.
-userId (en URL)
-json { "userId": "u12345", "status": "online" }
-
-
-GET /presence
-Listar todos los usuarios online.
-—
-json [ { "userId": "u12345", "status": "online" }, { "userId": "u67890", "status": "online" } ]
-
-
-DELETE /presence/{userId}
-Eliminar la sesión activa de un usuario (desconexión forzada).
-userId
-json { "message": "User u12345 disconnected" }
-
-
-(Opcional) GET /presence/subscribe
-Suscribirse en tiempo real a cambios de presencia (WebSocket o SSE).
-—
-Flujo en tiempo real: presence.user.online / presence.user.offline
-
-
-
+Para ejecutar el servicio de presencia, se debe ejecutar ```docker-compose up``` o ```docker-compose up --build``` en la carpeta Presencia/,
+Previamente se debe haber creado la network ```demo_04``` con ```docker network create demo_04```
