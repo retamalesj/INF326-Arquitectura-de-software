@@ -18,7 +18,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
+      - presence_db:/data/db
     networks:
       - demo_04
   rabbitmq:
@@ -31,7 +31,7 @@ services:
       - demo_04
 
 volumes:
-  mongo_data:
+  presence_db:
 
 networks:
   demo_04:
