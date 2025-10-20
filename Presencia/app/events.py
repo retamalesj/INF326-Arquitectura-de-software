@@ -5,7 +5,7 @@ import logging
 logging.getLogger("aio_pika").setLevel(logging.ERROR)
 
 class Emit:
-  def __init__(self, url='amqp://guest:guest@presence_message_broker/'):
+  def __init__(self, url='amqp://guest:guest@rabbitmq/'):
     self.url = url
     self.connection = None
     self.channel = None
@@ -18,8 +18,15 @@ class Emit:
   async def connect(self):
     self.connection = await aio_pika.connect_robust(self.url)
     self.channel = await self.connection.channel()
-    await self.channel.declare_exchange(exchange='users',
-                                  exchange_type=aio_pika.ExchangeType.TOPIC)
+    self.exchange = await self.channel.declare_exchange('presence',
+                                        aio_pika.ExchangeType.TOPIC)
+  
+    self.queue = await self.channel.declare_queue(
+        'presence_queue',
+        durable=True
+    )
+
+    await self.queue.bind(self.exchange, routing_key="user.#")
 
   async def publish(self, id, action, payload):
     routing_key = f"user.{action}.{id}"
@@ -30,11 +37,9 @@ class Emit:
       content_type='application/json'
     )
 
-    await self.channel.basic_publish(exchange='users',
-                              routing_key=routing_key,
-                              body=message)
+    await self.exchange.publish(message, routing_key)
     
-    print(f"[EVENT] exchange 'users' {action} publicado en RabbitMQ -> {payload}")
+    print(f"[EVENT] exchange 'presence' {action} publicado en RabbitMQ -> {payload}")
 
   async def close(self):
     if self.connection:

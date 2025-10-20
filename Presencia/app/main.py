@@ -37,7 +37,7 @@ HEARTBEAT_TIMEOUT = timedelta(seconds=60) # Tiempo máximo sin actualización an
 emit_events = Emit()
 
 async def marcar_offline_si_inactivo(userId: str):
-    user = await presences_collection .find_one({"userId": userId})
+    user = await presences_collection.find_one({"userId": userId})
     if not user:
         return
 
@@ -45,7 +45,7 @@ async def marcar_offline_si_inactivo(userId: str):
     if last_seen:
         diff = datetime.utcnow() - last_seen
         if diff > HEARTBEAT_TIMEOUT and user["status"] != "offline":
-            await presences_collection .update_one({"userId": userId}, {"$set": {"status": "offline"}})
+            await presences_collection.update_one({"userId": userId}, {"$set": {"status": "offline"}})
             await emit_events.send(userId, "offline", user.dict())
 
 @app.post("/presence", summary="Registrar conexión a un usuario.")
@@ -56,10 +56,7 @@ async def register_presence(
                 "summary": "Web device",
                 "description": "Usuario conectado desde la web",
                 "value": {"userId": "12345", "device": "web", "ip": "192.168.1.1"}
-            },
-            "summary": "Default device",
-            "description": "Usuario conectado sin dispositivo definido",
-            "value": {"userId": "67890"}
+            }
         },
     )
 ):
@@ -68,18 +65,19 @@ async def register_presence(
         "userId": data.userId,
         "device": data.device,
         "status": "online",
-        "connectedAt": now,
-        "lastSeen": now
+        "connectedAt": now.isoformat(),
+        "lastSeen": now.isoformat()
     }
 
-    await presences_collection .update_one(
+    await presences_collection.update_one(
         {"userId": data.userId},
         {"$set": presence_data},
         upsert=True
     )
 
-    await emit_events.send(data.userId, "online", "a")
-    return {"userId": data.userId, "status": "online", "connectedAt": now.isoformat() + "Z"}
+    await emit_events.send(data.userId, "online", presence_data)
+
+    return presence_data
 
 @app.patch("/presence/{userId}", summary="Actualizar estado")
 async def update_presence(
