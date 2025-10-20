@@ -1,0 +1,24 @@
+services:
+  presencia:
+    build: .
+    ports:
+      - "5002:80"
+    volumes:
+      - .:/code
+    links:
+      - demo_04_service_02_mongodb
+  mongodb_presencia:
+    image: mongo:7
+    container_name: presence_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+
+networks:
+  default:
+    name: demo_04
+    external: true
