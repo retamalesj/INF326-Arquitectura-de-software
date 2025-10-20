@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
@@ -19,27 +19,10 @@ class UserConnection(BaseModel):
     device: Optional[str] = "unknown"
     ip: Optional[str] = None
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "userId": "12345",
-                "device": "web",
-                "ip": "192.168.1.1"
-            }
-        }
-
 # Duda a seguir con respecto de heartbeat. Tal vez sea necesario otra manera.
 class UserStatusUpdate(BaseModel):
     status: Optional[str] = None
     heartbeat: Optional[bool] = False
-    
-    class Config:
-        schema_extra = {
-            "example": {
-                "status": "offline",
-                "heartbeat": True
-            }
-        }
 
 MONGO_URI = "mongodb://mongodb_presencia:27017"
 DB_NAME = "presence_db"
@@ -65,9 +48,21 @@ async def marcar_offline_si_inactivo(userId: str):
             await presences_collection .update_one({"userId": userId}, {"$set": {"status": "offline"}})
             await emit_events.send(userId, "offline", user.dict())
 
-#Empezando con los endpoints:
 @app.post("/presence", summary="Registrar conexión a un usuario.")
-async def register_presence(data: UserConnection):
+async def register_presence(
+    data: UserConnection = Body(
+        openapi_examples={
+            "normal": {
+                "summary": "Web device",
+                "description": "Usuario conectado desde la web",
+                "value": {"userId": "12345", "device": "web", "ip": "192.168.1.1"}
+            },
+            "summary": "Default device",
+            "description": "Usuario conectado sin dispositivo definido",
+            "value": {"userId": "67890"}
+        },
+    )
+):
     now = datetime.utcnow()
     presence_data = {
         "userId": data.userId,
@@ -87,7 +82,28 @@ async def register_presence(data: UserConnection):
     return {"userId": data.userId, "status": "online", "connectedAt": now.isoformat() + "Z"}
 
 @app.patch("/presence/{userId}", summary="Actualizar estado")
-async def update_presence(userId: str, update: UserStatusUpdate):
+async def update_presence(
+    userId: str,
+    update: UserStatusUpdate = Body(
+        openapi_examples={
+            "normal": {
+                "summary": "Actualizar el estado de un usuario.",
+                "description": "A **normal** item works correctly.",
+                "value": {
+                    "status": "offline"
+                },
+            },
+            "converted": {
+                "summary": "An example with converted data",
+                "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
+                "value": {
+                    "name": "Bar",
+                    "price": "35.4",
+                },
+            }
+        },
+    )
+):
     now = datetime.utcnow()
     doc = await presences_collection .find_one({"userId": userId})
     if not doc:
@@ -96,7 +112,7 @@ async def update_presence(userId: str, update: UserStatusUpdate):
     new_status = doc["status"]
 
     if update.heartbeat:
-        await presences_collection .update_one({"userId": userId}, {"$set": {"lastSeen": now}})
+        await presences_collection.update_one({"userId": userId}, {"$set": {"lastSeen": now}})
         await marcar_offline_si_inactivo(userId)
         return {"userId": userId, "status": doc["status"], "lastSeen": now.isoformat() + "Z"}
 
