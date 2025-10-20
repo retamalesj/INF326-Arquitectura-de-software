@@ -130,7 +130,7 @@ async def update_presence(
         await emit_events.send(userId, update.status, { "status": update.status })
 
     if update.heartbeat:
-        await mark_offline_if_inactive(userId)
+        await mark_offline_if_inactive(user)
 
     return {
         "status": "OK",
