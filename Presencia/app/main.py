@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -24,6 +24,12 @@ class UserStatusUpdate(BaseModel):
     status: Optional[str] = None
     heartbeat: Optional[bool] = False
 
+    @model_validator(mode="after")
+    def check_at_least_one(cls, model):
+        if model.status is None and not model.heartbeat:
+            raise ValueError("Debe enviarse al menos 'status' o 'heartbeat'")
+        return model
+
 MONGO_URI = "mongodb://mongodb_presencia:27017"
 DB_NAME = "presence_db"
 COLLECTION_NAME = "presences"
@@ -36,17 +42,13 @@ HEARTBEAT_TIMEOUT = timedelta(seconds=60) # Tiempo máximo sin actualización an
 
 emit_events = Emit()
 
-async def marcar_offline_si_inactivo(userId: str):
-    user = await presences_collection.find_one({"userId": userId})
-    if not user:
-        return
-
+async def mark_offline_if_inactive(user):
     last_seen = user.get("lastSeen")
     if last_seen:
         diff = datetime.utcnow() - last_seen
         if diff > HEARTBEAT_TIMEOUT and user["status"] != "offline":
-            await presences_collection.update_one({"userId": userId}, {"$set": {"status": "offline"}})
-            await emit_events.send(userId, "offline", user.dict())
+            await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": "offline"}})
+            await emit_events.send(user["userId"], "offline", { "status": "offline" })
 
 @app.post("/presence", summary="Registrar conexión a un usuario.")
 async def register_presence(
@@ -102,27 +104,38 @@ async def update_presence(
         },
     )
 ):
-    now = datetime.utcnow()
-    doc = await presences_collection .find_one({"userId": userId})
-    if not doc:
+    if update.heartbeat and update.status:
+        raise HTTPException(
+            status_code=422,
+            detail="No se puede enviar heartbeat y status al mismo tiempo"
+        )
+
+    user = await presences_collection.find_one({ "userId": userId })
+    if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    new_status = doc["status"]
+    now = datetime.utcnow()
+    update_data = {}
 
     if update.heartbeat:
-        await presences_collection.update_one({"userId": userId}, {"$set": {"lastSeen": now}})
-        await marcar_offline_si_inactivo(userId)
-        return {"userId": userId, "status": doc["status"], "lastSeen": now.isoformat() + "Z"}
+        update_data["lastSeen"] = now
 
     if update.status:
-        new_status = update.status.lower()
-        await presences_collection .update_one(
-            {"userId": userId},
-            {"$set": {"status": new_status, "lastSeen": now}}
-        )
-        await emit_events.send(userId, new_status, "")
+        update_data["status"] = update.status
+        update_data["lastSeen"] = now
 
-    return {"userId": userId, "status": new_status, "lastSeen": now.isoformat() + "Z"}
+    await presences_collection.update_one({ "userId": userId }, {"$set": update_data })
+
+    if update.status:
+        await emit_events.send(userId, update.status, { "status": update.status })
+
+    if update.heartbeat:
+        await mark_offline_if_inactive(userId)
+
+    return {
+        "status": "OK",
+        "message": "Se procesó correctamente"
+    }
 
 @app.get("/presence/{userId}")
 async def get_user_presence(userId: str, update: UserStatusUpdate):
