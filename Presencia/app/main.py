@@ -77,11 +77,21 @@ async def mark_offline_if_inactive(user):
 async def register_presence(
     data: UserConnection = Body(
         openapi_examples={
-            "normal": {
-                "summary": "Web device",
-                "description": "Usuario conectado desde la web",
+            "from_web": {
+                "summary": "Conexión desde la web",
+                "description": "Usuario conectado desde el portal web.",
                 "value": {"userId": "12345", "device": "web", "ip": "192.168.1.1"}
-            }
+            },
+            "from_mobile": {
+                "summary": "Conexión desde móvil",
+                "description": "Usuario conectado desde la aplicación móvil.",
+                "value": {"userId": "67890", "device": "mobile", "ip": "10.0.0.5"}
+            },
+            "without_device": {
+                "summary": "Dispositivo no especificado",
+                "description": "Usuario conectado sin indicar dispositivo.",
+                "value": {"userId": "24680"}
+            },
         },
     )
 ):
@@ -115,21 +125,26 @@ async def update_presence(
     userId: str,
     update: UserStatusUpdate = Body(
         openapi_examples={
-            "normal": {
-                "summary": "Actualizar el estado de un usuario.",
-                "description": "A **normal** item works correctly.",
-                "value": {
-                    "status": "offline"
-                },
+            "set_offline": {
+                "summary": "Cambiar estado a offline",
+                "description": "El usuario se desconecta explícitamente.",
+                "value": {"status": "offline"}
             },
-            "converted": {
-                "summary": "An example with converted data",
-                "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
-                "value": {
-                    "name": "Bar",
-                    "price": "35.4",
-                },
-            }
+            "set_online": {
+                "summary": "Cambiar estado a online",
+                "description": "El usuario vuelve a conectarse manualmente.",
+                "value": {"status": "online"}
+            },
+            "heartbeat_signal": {
+                "summary": "Enviar heartbeat",
+                "description": "Refresca la última conexión del usuario",
+                "value": {"heartbeat": True}
+            },
+            "invalid_both": {
+                "summary": "Error por enviar ambos campos",
+                "description": "Ejemplo inválido: no se pueden enviar `status` y `heartbeat` juntos.",
+                "value": {"status": "offline", "heartbeat": True}
+            },
         },
     )
 ):
