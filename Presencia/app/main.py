@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, APIRouter
 from pydantic import BaseModel, model_validator
 from datetime import datetime, timedelta
 from typing import Optional
@@ -12,6 +12,8 @@ app = FastAPI(
     description="API para registrar, actualizar y consultar el estado de conexión de los usuarios.",
     version="0.0.1"
 )
+
+router_v1 = APIRouter(prefix="/api/v1.0.0", tags=["v1.0.0 - Servicio de presencia"])
 
 class StatusEnum(str, Enum):
     online = "online"
@@ -73,7 +75,7 @@ async def mark_offline_if_inactive(user):
             await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": status_offline.value}})
             await emit_events.send(user["userId"], status_offline.value, { "status": status_offline.value })
 
-@app.get("/presence/health", summary="Verificar estado del servicio", tags=["Sistema"])
+@router_v1.get("/presence/health", summary="Verifica el estado operativo del servicio de presencia y la conexión a MongoDB")
 async def health_check():
     try:
         await db.command("ping")
@@ -84,7 +86,7 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Error de conexión con MongoDB: {str(e)}")
 
-@app.post("/presence", summary="Registrar conexión a un usuario.")
+@router_v1.post("/presence", summary="Registrar conexión a un usuario.")
 async def register_presence(
     data: UserConnection = Body(
         openapi_examples={
@@ -131,7 +133,7 @@ async def register_presence(
         "data": presence_data
     }
 
-@app.get("/presence", summary="Listar todos los usuarios")
+@router_v1.get("/presence", summary="Lista todos los usuarios con su estado de presencia")
 async def list_users(status: Optional[StatusEnum] = None):
     base_filter = {}
     if status:
@@ -148,7 +150,7 @@ async def list_users(status: Optional[StatusEnum] = None):
         }
     }    
 
-@app.get("/presence/stats", summary="Obtener estadísticas de presencia")
+@router_v1.get("/presence/stats", summary="Devuelve estadísticas agregadas de presencia, incluyendo usuarios online y offline")
 async def get_presence_stats():
     online_count = await presences_collection.count_documents({"status": StatusEnum.online.value})
     offline_count = await presences_collection.count_documents({"status": StatusEnum.offline.value})
@@ -164,7 +166,7 @@ async def get_presence_stats():
         }
     }
 
-@app.get("/presence/{userId}", summary="Obtener la presencia de un usuario")
+@router_v1.get("/presence/{userId}", summary="Obtiene la información de presencia de un usuario específico por su ID")
 async def get_user_presence(userId: str):
     user = await presences_collection.find_one({ "userId": userId })
     if not user:
@@ -176,7 +178,7 @@ async def get_user_presence(userId: str):
         "data": UserPresence(**user)
     }
 
-@app.patch("/presence/{userId}", summary="Actualizar estado")
+@router_v1.patch("/presence/{userId}", summary="Actualiza el estado de un usuario (online/offline) o actualiza su última vez visto")
 async def update_presence(
     userId: str,
     update: UserStatusUpdate = Body(
@@ -193,7 +195,7 @@ async def update_presence(
             },
             "heartbeat_signal": {
                 "summary": "Enviar heartbeat",
-                "description": "Refresca la última conexión del usuario",
+                "description": "Refresca la última conexión del usuario (lastSeen), esto NO actualiza su status.",
                 "value": {"heartbeat": True}
             },
             "invalid_both": {
@@ -239,7 +241,7 @@ async def update_presence(
         "data": None
     }
 
-@app.delete("/presence/{userId}")
+@router_v1.delete("/presence/{userId}", summary="Elimina la información de presencia de un usuario de la base de datos")
 async def delete_presence(userId: str):
     user = await presences_collection.delete_one({"userId": userId})
     if user.deleted_count == 0:
@@ -250,3 +252,5 @@ async def delete_presence(userId: str):
         "message": "Usuario borrado de la base de datos de presencia.",
         "data": None
     }
+
+app.include_router(router_v1)
