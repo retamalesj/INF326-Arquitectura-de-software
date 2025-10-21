@@ -123,7 +123,23 @@ async def register_presence(
 ):
     now = datetime.utcnow()
     status_online: StatusEnum = StatusEnum.online
+    if not data.userId:
+        raise HTTPException(
+            status_code=400,
+            detail="El campo 'userId' es obligatorio."
+        )
 
+    if data.device not in ["web", "mobile", None]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El dispositivo '{data.device}' no es válido. Use 'web' o 'mobile'."
+        )
+
+    if not status_online:
+        raise HTTPException(
+            status_code=400,
+            detail="El estado del usuario no se pudo determinar correctamente."
+        )
     presence_data = {
         "userId": data.userId,
         "device": data.device,

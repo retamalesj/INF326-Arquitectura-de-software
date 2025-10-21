@@ -4,3 +4,7 @@
 
 Para ejecutar el servicio de presencia, se debe ejecutar ```docker-compose up``` o ```docker-compose up --build``` en la carpeta Presencia/,
 Previamente se debe haber creado la network ```demo_04``` con ```docker network create demo_04```
+
+Una vez hecho esto se va a poder acceder a [localhost](http://localhost:5002/docs)
+y a rabbitmq con http://localhost:15672/#/ (usuario guest y contraseña guest para poder ver los mensajes de las colas que seran consumidos.)
+
