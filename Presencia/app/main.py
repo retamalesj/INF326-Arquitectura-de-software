@@ -13,6 +13,11 @@ app = FastAPI(
     version="0.0.1"
 )
 
+from pymongo.errors import PyMongoError
+from .exceptions import MongoConnectionError, RabbitMQError
+from .exceptions import register_exception_handlers
+register_exception_handlers(app)
+
 router_v1 = APIRouter(prefix="/api/v1.0.0", tags=["v1.0.0 - Servicio de presencia"])
 
 class StatusEnum(str, Enum):
@@ -71,9 +76,17 @@ async def mark_offline_if_inactive(user):
     if last_seen:
         diff = datetime.utcnow() - last_seen
         if diff > HEARTBEAT_TIMEOUT and user["status"] != StatusEnum.offline.value:
-            status_offline: StatusEnum = StatusEnum.offline
-            await presences_collection.update_one({"userId": user["userId"] }, {"$set": {"status": status_offline.value}})
-            await emit_events.send(user["userId"], status_offline.value, { "status": status_offline.value })
+            try:
+                status_offline: StatusEnum = StatusEnum.offline
+                await presences_collection.update_one(
+                    {"userId": user["userId"]},
+                    {"$set": {"status": status_offline.value}}
+                )
+                await emit_events.send(user["userId"], status_offline.value, {"status": status_offline.value})
+            except PyMongoError as e:
+                raise MongoConnectionError(f"No se pudo marcar usuario como offline: {str(e)}")
+            except Exception as e:
+                raise RabbitMQError(f"Error al emitir evento offline: {str(e)}")
 
 @router_v1.get("/presence/health", summary="Verifica el estado operativo del servicio de presencia y la conexión a MongoDB")
 async def health_check():
@@ -118,18 +131,26 @@ async def register_presence(
         "connectedAt": now.isoformat(),
         "lastSeen": now.isoformat()
     }
-
-    await presences_collection.update_one(
-        {"userId": data.userId},
-        {"$set": presence_data},
-        upsert=True
-    )
-
-    await emit_events.send(data.userId, status_online.value, presence_data)
-
+    try:
+        # Guardar en MongoDB
+        await presences_collection.update_one(
+            {"userId": data.userId},
+            {"$set": presence_data},
+            upsert=True
+        )
+    except PyMongoError as e:
+        # Error relacionado con MongoDB
+        raise MongoConnectionError(f"No se pudo registrar presencia en MongoDB: {str(e)}")
+    try:
+        # Enviar a RabbitMQ
+        await emit_events.send(data.userId, status_online.value, presence_data)
+    except Exception as e:
+        # Por si RabbitMQ falla
+        raise RabbitMQError(f"Error al publicar evento en RabbitMQ: {str(e)}")
+    #Respuesta normal
     return {
         "status": "OK",
-        "message": "",
+        "message": "Usuario conectado correctamente",
         "data": presence_data
     }
 
@@ -139,7 +160,10 @@ async def list_users(status: Optional[StatusEnum] = None):
     if status:
         base_filter["status"] = status.value
 
-    users = await presences_collection.find(base_filter).to_list(length=None)
+    try:
+        users = await presences_collection.find(base_filter).to_list(length=None)
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al listar usuarios: {str(e)}")
 
     return {
         "status": "OK",
@@ -148,27 +172,30 @@ async def list_users(status: Optional[StatusEnum] = None):
             "total_users": len(users),
             "users": [UserPresence(**user) for user in users]
         }
-    }    
+    }
 
 @router_v1.get("/presence/stats", summary="Devuelve estadísticas agregadas de presencia, incluyendo usuarios online y offline")
 async def get_presence_stats():
-    online_count = await presences_collection.count_documents({"status": StatusEnum.online.value})
-    offline_count = await presences_collection.count_documents({"status": StatusEnum.offline.value})
-    total = online_count + offline_count
+    try:
+        online_count = await presences_collection.count_documents({"status": StatusEnum.online.value})
+        offline_count = await presences_collection.count_documents({"status": StatusEnum.offline.value})
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al obtener estadísticas: {str(e)}")
 
+    total = online_count + offline_count
     return {
         "status": "OK",
         "message": "Estadísticas de presencia obtenidas correctamente",
-        "data": {
-            "total": total,
-            "online": online_count,
-            "offline": offline_count
-        }
+        "data": {"total": total, "online": online_count, "offline": offline_count}
     }
 
 @router_v1.get("/presence/{userId}", summary="Obtiene la información de presencia de un usuario específico por su ID")
 async def get_user_presence(userId: str):
-    user = await presences_collection.find_one({ "userId": userId })
+    try:
+        user = await presences_collection.find_one({"userId": userId})
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al consultar usuario: {str(e)}")
+
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -179,9 +206,7 @@ async def get_user_presence(userId: str):
     }
 
 @router_v1.patch("/presence/{userId}", summary="Actualiza el estado de un usuario (online/offline) o actualiza su última vez visto")
-async def update_presence(
-    userId: str,
-    update: UserStatusUpdate = Body(
+async def update_presence(userId: str, update: UserStatusUpdate = Body(
         openapi_examples={
             "set_offline": {
                 "summary": "Cambiar estado a offline",
@@ -207,12 +232,13 @@ async def update_presence(
     )
 ):
     if update.heartbeat and update.status:
-        raise HTTPException(
-            status_code=422,
-            detail="No se puede enviar heartbeat y status al mismo tiempo"
-        )
+        raise HTTPException(status_code=422, detail="No se puede enviar heartbeat y status al mismo tiempo")
 
-    user = await presences_collection.find_one({ "userId": userId })
+    try:
+        user = await presences_collection.find_one({"userId": userId})
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al consultar usuario: {str(e)}")
+
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -227,30 +253,31 @@ async def update_presence(
         update_data["status"] = status.value
         update_data["lastSeen"] = now
 
-    await presences_collection.update_one({ "userId": userId }, {"$set": update_data })
+    try:
+        await presences_collection.update_one({"userId": userId}, {"$set": update_data})
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al actualizar presencia: {str(e)}")
 
-    if update.status:
-        await emit_events.send(userId, status.value, { "status": status.value })
+    try:
+        if update.status:
+            await emit_events.send(userId, status.value, {"status": status.value})
+        if update.heartbeat:
+            await mark_offline_if_inactive(user)
+    except Exception as e:
+        raise RabbitMQError(f"Error al emitir evento en RabbitMQ: {str(e)}")
 
-    if update.heartbeat:
-        await mark_offline_if_inactive(user)
-
-    return {
-        "status": "OK",
-        "message": "Se procesó correctamente",
-        "data": None
-    }
+    return {"status": "OK", "message": "Se procesó correctamente", "data": None}
 
 @router_v1.delete("/presence/{userId}", summary="Elimina la información de presencia de un usuario de la base de datos")
 async def delete_presence(userId: str):
-    user = await presences_collection.delete_one({"userId": userId})
-    if user.deleted_count == 0:
+    try:
+        result = await presences_collection.delete_one({"userId": userId})
+    except PyMongoError as e:
+        raise MongoConnectionError(f"Error al eliminar usuario: {str(e)}")
+
+    if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail=f"Usuario {userId} no encontrado")
-    
-    return {
-        "status": "OK",
-        "message": "Usuario borrado de la base de datos de presencia.",
-        "data": None
-    }
+
+    return {"status": "OK", "message": "Usuario borrado de la base de datos de presencia.", "data": None}
 
 app.include_router(router_v1)
