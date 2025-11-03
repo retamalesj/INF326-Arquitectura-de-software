@@ -8,7 +8,7 @@ deploy:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/autoscaling.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/ingress.yaml
 
-	@echo "Desplegado papu :v"
+	@echo "Desplegado correctamente!"
 
 info:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml cluster-info
