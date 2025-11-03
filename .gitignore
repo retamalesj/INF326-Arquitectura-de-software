@@ -1,1 +1,5 @@
 __pycache__
+
+.env
+k8s-inf326-nyc1-kubeconfig-2.yaml
+k8s/k8s-inf326-nyc1-kubeconfig-2.yaml

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-presencia
+  labels:
+    app: mongodb-presencia
+spec:
+  selector:
+    app: mongodb-presencia
+  type: ClusterIP
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-presencia
+  labels:
+    app: mongodb-presencia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-presencia
+  template:
+    metadata:
+      labels:
+        app: mongodb-presencia
+    spec:
+      containers:
+        - name: mongodb-presencia
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: mongo-data
+          emptyDir: {}
