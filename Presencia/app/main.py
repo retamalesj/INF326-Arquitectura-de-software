@@ -18,7 +18,7 @@ from .exceptions import MongoConnectionError, RabbitMQError
 from .exceptions import register_exception_handlers
 register_exception_handlers(app)
 
-router_v1 = APIRouter(prefix="/presence-service/api/v1.0.0", tags=["v1.0.0 - Servicio de presencia"])
+router_v1 = APIRouter(prefix="/api/v1.0.0", tags=["v1.0.0 - Servicio de presencia"])
 
 class StatusEnum(str, Enum):
     online = "online"

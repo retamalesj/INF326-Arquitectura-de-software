@@ -5,7 +5,7 @@ import logging
 logging.getLogger("aio_pika").setLevel(logging.ERROR)
 
 class Emit:
-  def __init__(self, url='amqp://guest:guest@rabbitmq/'):
+  def __init__(self, url='amqp://guest:guest@message-broker/'):
     self.url = url
     self.connection = None
     self.channel = None
