@@ -8,3 +8,5 @@ Previamente se debe haber creado la network ```demo_04``` con ```docker network 
 Una vez hecho esto se va a poder acceder a [localhost](http://localhost:5002/docs)
 y a rabbitmq con http://localhost:15672/#/ (usuario guest y contraseña guest para poder ver los mensajes de las colas que seran consumidos.)
 
+Video de prueba de la aplicación:
+https://drive.google.com/file/d/1GaS2z3w_QpFKFd_WO3bily5EwRwq045M/view?usp=sharing
