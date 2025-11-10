@@ -2,7 +2,6 @@
 
 deploy:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/mongodb.yaml
-	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/rabbitmq.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/service.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/deployment.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/autoscaling.yaml
@@ -28,7 +27,20 @@ logs:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml logs -l app=presence-service -f --all-containers
 
 status:
+	@echo "-------------------------------------------------------------------------------------------------------"
+	@echo ""
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml get pods
+	@echo ""
+	@echo "-------------------------------------------------------------------------------------------------------"
+	@echo ""
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml get svc
+	@echo ""
+	@echo "-------------------------------------------------------------------------------------------------------"
+	@echo ""
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml get hpa
+	@echo ""
+	@echo "-------------------------------------------------------------------------------------------------------"
+	@echo ""
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml get ingress
+	@echo ""
+	@echo "-------------------------------------------------------------------------------------------------------"
