@@ -2,6 +2,11 @@
   * Administra estados de conexión de usuarios (online/offline).
   * Emite eventos de presencia para enriquecer otros servicios.
 
+Integrantes:
+- José Manzano Manzano
+- Pablo Retamales Jara
+- Gabriel Leyton Leyton
+
 Para ejecutar el servicio de presencia, se debe ejecutar ```docker-compose up``` o ```docker-compose up --build``` en la carpeta Presencia/,
 Previamente se debe haber creado la network ```demo_04``` con ```docker network create demo_04```
 
