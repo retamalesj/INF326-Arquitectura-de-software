@@ -3,15 +3,15 @@ kind: Ingress
 metadata:
   name: presence-service-ingress
   annotations:
-    cert-manager.io/issuer: letsencrypt-issuer
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     nginx.ingress.kubernetes.io/proxy-body-size: 50m
 spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - demo.inf326.nursoft.dev
+    - presence-service.inf326.nursoft.dev
     - presence-134-199-176-197.nip.io
-    secretName: letsencrypt
+    secretName: presence-service-tls
   rules:
   - host: presence-134-199-176-197.nip.io
     http:
@@ -23,13 +23,13 @@ spec:
             name: presence-service
             port:
               number: 80
-  - host: demo.inf326.nursoft.dev
-    http: &demo_rules
+  - host: presence-service.inf326.nursoft.dev
+    http:
       paths:
-      - path: /presence-service
+      - path: /
         pathType: Prefix
         backend:
           service:
             name: presence-service
             port:
-              number: 8000
+              number: 80

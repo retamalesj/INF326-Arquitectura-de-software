@@ -1,7 +1,6 @@
 .PHONY: help deploy info build-presence clean logs status
 
 deploy:
-	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/mongodb.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/service.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/deployment.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/autoscaling.yaml
@@ -17,7 +16,6 @@ build-presence:
 	docker push doorkaz/presence-service:latest
 
 clean:
-	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/mongodb.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/deployment.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/service.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/autoscaling.yaml
