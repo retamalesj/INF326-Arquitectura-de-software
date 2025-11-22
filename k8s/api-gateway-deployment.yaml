@@ -20,6 +20,20 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /api/presence-gateway/health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/presence-gateway/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
           env:
             - name: USERS_URL
               value: "https://users.inf326.nursoft.dev"
