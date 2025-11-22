@@ -4,7 +4,7 @@ from config import URLS
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
-# ---------------- POST ----------------
+# Create Message
 @router.post("/threads/{thread_id}/messages")
 async def gw_create_message(
     request: Request,
@@ -20,7 +20,7 @@ async def gw_create_message(
         headers={"X-User-Id": x_user_id},
     )
 
-# ---------------- GET ----------------
+# List Messages
 @router.get("/threads/{thread_id}/messages")
 async def gw_list_messages(
     request: Request,
@@ -38,7 +38,7 @@ async def gw_list_messages(
         params=params,
     )
 
-# ---------------- PUT ----------------
+# Update message
 @router.put("/threads/{thread_id}/messages/{message_id}")
 async def gw_update_message(
     request: Request,
@@ -55,7 +55,7 @@ async def gw_update_message(
         headers={"X-User-Id": x_user_id},
     )
 
-# ---------------- DELETE ----------------
+# Delete Message
 @router.delete("/threads/{thread_id}/messages/{message_id}")
 async def gw_delete_message(
     request: Request,
