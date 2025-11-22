@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-presence-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api-gateway-presence.inf326.nursoft.dev
+    secretName: api-gateway-presence-tls
+  rules:
+  - host: api-gateway-presence.inf326.nursoft.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-presence
+            port:
+              number: 80

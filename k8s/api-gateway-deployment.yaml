@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-presence
+  labels:
+    app: api-gateway-presence
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway-presence
+  template:
+    metadata:
+      labels:
+        app: api-gateway-presence
+    spec:
+      containers:
+        - name: api-gateway
+          image: doorkaz/api-gateway:latest   #cambiar despues
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: USERS_URL
+              value: "https://users.inf326.nursoft.dev"
+            - name: PRESENCE_URL
+              value: "https://presence-134-199-176-197.nip.io"
+            - name: MESSAGES_URL
+              value: "https://messages-service.kroder.dev"
+            - name: CHANNELS_URL
+              value: "https://channel-api.inf326.nur.dev"
+            - name: MODERATION_URL
+              value: "https://moderation.inf326.nur.dev/api/v1"
+            - name: SEARCH_URL
+              value: "https://searchservice.inf326.nursoft.dev"
+            - name: FILES_URL
+              value: "http://file-service-134-199-176-197.nip.io"
+            - name: THREADS_URL
+              value: "https://demo.inf326.nur.dev/threads"
+            - name: WIKI_URL
+              value: "http://wikipedia-chatbot-134-199-176-197.nip.io"
+            - name: CHATBOT_URL
+              value: "https://chatbotprogra.inf326.nursoft.dev"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
