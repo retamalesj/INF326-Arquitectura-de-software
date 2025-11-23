@@ -15,6 +15,7 @@ import {
   type UpdateChannelDTO,
 } from '../services/channel'
 import { createThread, getThreadsByChannel } from '../services/threads'
+import { toast } from 'sonner'
 
 export const Home = () => {
   const { user, loading: authLoading } = useContext(AuthContext)
@@ -91,6 +92,7 @@ export const Home = () => {
       await fetchChannels(page, pageSize)
       setSelectedChannel(ch)
       setNewChannelName('')
+      toast.success(`Se creó el canal ${ch.name} correctamente.`)
     }
   }
 
@@ -125,7 +127,7 @@ export const Home = () => {
       <div className="w-74 h-full border-1 border-t-gray-200 border-r-gray-300 flex flex-col bg-gray-50 items-start px-6 h-full">
         <H2 className="text-start mb-4">Canales</H2>
 
-        <ScrollArea className="flex w-full overflow-x-hidden overflow-y-auto">
+        <ScrollArea className="flex-1 w-full overflow-x-hidden overflow-y-auto">
           {loading ? (
             <P>Cargando canales...</P>
           ) : channels.length === 0 ? (
@@ -147,7 +149,7 @@ export const Home = () => {
             </div>
           )}
         </ScrollArea>
-        <div className="p-2 border-t border-gray-200 flex gap-2 mt-36">
+        <div className="p-2 border-t border-gray-200 flex gap-2 mt-auto">
           <Input
             placeholder="Nuevo canal..."
             value={newChannelName}
