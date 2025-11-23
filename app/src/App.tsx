@@ -10,6 +10,7 @@ import { ModerationAdminPage } from './pages/admin/admin'
 import { Home } from './pages/home'
 
 import { Toaster } from '@/components/ui/sonner'
+import { Register } from './pages/users/Register'
 function App() {
   return (
     <AuthProvider>
@@ -30,6 +31,14 @@ function App() {
             element={
               <GuestRoute>
                 <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
               </GuestRoute>
             }
           />

@@ -41,7 +41,9 @@ export interface LoginResponse {
   token_type: 'bearer'
 }
 
-export const loginUser = async (body: LoginDTO): Promise<LoginResponse | null> => {
+export const loginUser = async (
+  body: LoginDTO,
+): Promise<LoginResponse | null> => {
   try {
     const response = await fetch(`${API_GATEWAY_URL}/users/login`, {
       method: 'POST',
@@ -91,7 +93,10 @@ export interface UpdateMeDTO {
   full_name: string
 }
 
-export const updateMe = async (token: string, body: UpdateMeDTO): Promise<UserProfile | null> => {
+export const updateMe = async (
+  token: string,
+  body: UpdateMeDTO,
+): Promise<UserProfile | null> => {
   try {
     const response = await fetch(`${API_GATEWAY_URL}/users/me`, {
       method: 'PATCH',

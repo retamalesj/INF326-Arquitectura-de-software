@@ -1,29 +1,61 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { H1, P } from '@/components/ui/typography'
+import { registerUser, type RegisterDTO } from '@/services/users'
+import { toast } from 'sonner'
 
 export const Register = () => {
+  const navigate = useNavigate()
+
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     if (password !== confirmPassword) {
-      alert('Las contraseñas no coinciden')
+      toast.error('Las contraseñas no coinciden')
       return
     }
 
-    console.log({ name, email, password })
-    // Aquí iría tu lógica de registro con API
+    if (password.length < 8) {
+      toast.error('La contraseña debe tener al menos 8 caracteres')
+      return
+    }
+
+    const body: RegisterDTO = {
+      full_name: name,
+      email,
+      username: email.split('@')[0],
+      password,
+    }
+
+    setLoading(true)
+    const result = await registerUser(body)
+    setLoading(false)
+
+    if (result) {
+      toast.success('Usuario registrado con éxito!')
+      navigate('/login')
+    } else {
+      toast.error('Hubo un error registrando el usuario')
+    }
   }
+
+  // Tipado del evento de input change
+  const handleInputChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value)
+    }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
@@ -46,7 +78,7 @@ export const Register = () => {
                 type="text"
                 placeholder="Tu nombre"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={handleInputChange(setName)}
                 required
                 className="text-gray-700"
               />
@@ -61,7 +93,7 @@ export const Register = () => {
                 type="email"
                 placeholder="ejemplo@correo.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleInputChange(setEmail)}
                 required
                 className="text-gray-700"
               />
@@ -76,14 +108,17 @@ export const Register = () => {
                 type="password"
                 placeholder="Tu contraseña"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handleInputChange(setPassword)}
                 required
                 className="text-gray-700"
               />
             </div>
 
             <div className="flex flex-col space-y-1">
-              <Label htmlFor="confirmPassword" className="font-medium text-gray-700">
+              <Label
+                htmlFor="confirmPassword"
+                className="font-medium text-gray-700"
+              >
                 Confirmar contraseña
               </Label>
               <Input
@@ -91,7 +126,7 @@ export const Register = () => {
                 type="password"
                 placeholder="Repite tu contraseña"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={handleInputChange(setConfirmPassword)}
                 required
                 className="text-gray-700"
               />
@@ -100,8 +135,9 @@ export const Register = () => {
             <Button
               type="submit"
               className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              disabled={loading}
             >
-              Registrarse
+              {loading ? 'Registrando...' : 'Registrarse'}
             </Button>
           </form>
 
