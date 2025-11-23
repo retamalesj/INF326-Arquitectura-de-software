@@ -1,21 +1,11 @@
 import { Outlet } from 'react-router-dom'
 import { Navbar } from './ui/navbar'
-import { useEffect, useState } from 'react'
-import { getMe, type UserProfile } from '../services/users'
 
 export const Layout = () => {
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const token = localStorage.getItem('token')
-
-  useEffect(() => {
-    if (!token) return
-    getMe(token).then(setUser)
-  }, [token])
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
-      <Navbar user={user} setUser={setUser} />
+      <Navbar />
 
       {/* Contenido principal */}
       <main className="flex-1">
