@@ -120,18 +120,18 @@ export const Home = () => {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex w-full">
       {/* Sidebar de canales */}
-      <div className="w-64 h-full border-1 border-t-gray-200 border-r-gray-300 flex flex-col bg-gray-50 items-start px-6">
+      <div className="w-74 h-full border-1 border-t-gray-200 border-r-gray-300 flex flex-col bg-gray-50 items-start px-6 h-full">
         <H2 className="text-start mb-4">Canales</H2>
 
-        <ScrollArea className="flex-1 overflow-y-auto max-h-[80vh]">
+        <ScrollArea className="flex w-full overflow-x-hidden overflow-y-auto">
           {loading ? (
             <P>Cargando canales...</P>
           ) : channels.length === 0 ? (
             <P className="text-gray-500">No hay canales</P>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 w-full">
               {channels.map((ch) => (
                 <Button
                   key={ch.id}
@@ -147,23 +147,32 @@ export const Home = () => {
             </div>
           )}
         </ScrollArea>
+        <div className="p-2 border-t border-gray-200 flex gap-2 mt-36">
+          <Input
+            placeholder="Nuevo canal..."
+            value={newChannelName}
+            onChange={(e) => setNewChannelName(e.target.value)}
+            className="flex-1"
+          />
+          <Button onClick={handleCreateChannel}>Crear</Button>
+        </div>
 
         {/* Botones anterior y siguiente */}
-        <div className="flex justify-between items-center px-2 py-2">
+        <div className="flex gap-2 items-center px-2 py-2">
           <Button
             disabled={page === 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           >
-            ⬅
+            &lt;
           </Button>
 
-          <span>Página {page}</span>
+          <span>Pág. {page}</span>
 
           <Button
             disabled={channels.length < pageSize}
             onClick={() => setPage((prev) => prev + 1)}
           >
-            ➝
+            &gt;
           </Button>
 
           <select
@@ -176,20 +185,10 @@ export const Home = () => {
             <option value={20}>20</option>
           </select>
         </div>
-
-        <div className="p-2 border-t border-gray-200 flex gap-2">
-          <Input
-            placeholder="Nuevo canal..."
-            value={newChannelName}
-            onChange={(e) => setNewChannelName(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={handleCreateChannel}>Crear</Button>
-        </div>
       </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 p-4 overflow-auto">
+      <div className="flex p-4 overflow-auto">
         {selectedChannel ? (
           <div className="space-y-4">
             <H3>{selectedChannel.name}</H3>
