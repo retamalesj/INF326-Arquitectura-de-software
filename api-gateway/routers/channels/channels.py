@@ -95,7 +95,8 @@ async def gw_channels_create(request: Request):
 # Listar canales
 @router.get("")
 async def gw_channels_list(request: Request):
-    return await forward("GET", f"{URLS['channels']}/v1/channels/", request)
+    params = dict(request.query_params)
+    return await forward("GET", f"{URLS['channels']}/v1/channels/", request, params=params)
 
 # Obtener canal por ID
 @router.get("/{channel_id}")

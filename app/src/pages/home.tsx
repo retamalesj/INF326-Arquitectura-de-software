@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react'
-import { Card, CardHeader } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { H1, P } from '@/components/ui/typography'
+import { H2, H3, P } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
 import { AuthContext } from '../context/AuthContext'
 import {
@@ -10,7 +10,6 @@ import {
   createChannel,
   updateChannel,
   deleteChannel,
-  reactivateChannel,
   type Channel,
   type CreateChannelDTO,
   type UpdateChannelDTO,
@@ -32,20 +31,23 @@ export const Home = () => {
   const [editName, setEditName] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  /** --- Fetch canales --- */
 
+  /** --- Fetch canales --- */
   const fetchChannels = async (p = page, ps = pageSize) => {
     setLoading(true)
     try {
       const data = await getChannels(p, ps)
       if (data) {
-        setChannels(data) // 🔥 REEMPLAZA—NO ACUMULA
+        setChannels(data)
+
+        // Mantener selección si sigue en la página
         if (!selectedChannel && data.length > 0) {
           setSelectedChannel(data[0])
-        }
-        // ❗ Si el canal seleccionado no está en esta página, deseleccionar
-        if (selectedChannel && !data.some((c) => c.id === selectedChannel.id)) {
-          setSelectedChannel(null)
+        } else if (
+          selectedChannel &&
+          !data.some((c) => c.id === selectedChannel.id)
+        ) {
+          setSelectedChannel(data[0] || null)
         }
       }
     } catch (err) {
@@ -57,9 +59,7 @@ export const Home = () => {
 
   useEffect(() => {
     fetchChannels(page, pageSize)
-    setSelectedChannel(null) // ← resetea selección
   }, [page, pageSize])
-
 
   /** --- Fetch threads al cambiar canal --- */
   useEffect(() => {
@@ -88,15 +88,12 @@ export const Home = () => {
 
     const ch = await createChannel(body)
     if (ch) {
-      // actualiza la lista, pero NO cambia la selección aún
       await fetchChannels(page, pageSize)
-
-      // ahora selecciona el nuevo canal
       setSelectedChannel(ch)
-
       setNewChannelName('')
     }
   }
+
   /** Actualizar canal */
   const handleUpdateChannel = async () => {
     if (!selectedChannel?.id || !editName.trim()) return
@@ -122,20 +119,11 @@ export const Home = () => {
     }
   }
 
-  /** Reactivar canal */
-  const handleReactivateChannel = async () => {
-    if (!selectedChannel?.id) return
-    const res = await reactivateChannel(selectedChannel.id)
-    if (res) fetchChannels()
-  }
-
   return (
     <div className="flex h-screen">
       {/* Sidebar de canales */}
-      <Card className="w-64 h-full border-r border-gray-200 flex flex-col bg-gray-50">
-        <CardHeader className="py-4">
-          <H1>Canales</H1>
-        </CardHeader>
+      <div className="w-64 h-full border-1 border-t-gray-200 border-r-gray-300 flex flex-col bg-gray-50 items-start px-6">
+        <H2 className="text-start mb-4">Canales</H2>
 
         <ScrollArea className="flex-1 overflow-y-auto max-h-[80vh]">
           {loading ? (
@@ -143,34 +131,39 @@ export const Home = () => {
           ) : channels.length === 0 ? (
             <P className="text-gray-500">No hay canales</P>
           ) : (
-            <div className="flex flex-col gap-2 p-2">
+            <div className="flex flex-col gap-2">
               {channels.map((ch) => (
                 <Button
                   key={ch.id}
                   variant={
                     selectedChannel?.id === ch.id ? 'default' : 'outline'
                   }
-                  className="justify-start"
+                  className={`justify-start ${selectedChannel?.id === ch.id ? '' : 'border-1 border-gray-300'}`}
                   onClick={() => setSelectedChannel(ch)}
                 >
-                  {ch.name} {ch.is_active ? '' : '(Inactivo)'}
+                  {ch.name}
                 </Button>
               ))}
             </div>
           )}
         </ScrollArea>
+
+        {/* Botones anterior y siguiente */}
         <div className="flex justify-between items-center px-2 py-2">
           <Button
             disabled={page === 1}
             onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
           >
-            ⬅ Anterior
+            ⬅
           </Button>
 
           <span>Página {page}</span>
 
-          <Button onClick={() => setPage((prev) => prev + 1)}>
-            Siguiente ➝
+          <Button
+            disabled={channels.length < pageSize}
+            onClick={() => setPage((prev) => prev + 1)}
+          >
+            ➝
           </Button>
 
           <select
@@ -193,16 +186,20 @@ export const Home = () => {
           />
           <Button onClick={handleCreateChannel}>Crear</Button>
         </div>
-      </Card>
+      </div>
 
       {/* Contenido principal */}
       <div className="flex-1 p-4 overflow-auto">
         {selectedChannel ? (
           <div className="space-y-4">
-            <H1>{selectedChannel.name}</H1>
-            <P>Tipo: {selectedChannel.channel_type}</P>
+            <H3>{selectedChannel.name}</H3>
+            <P>
+              Tipo:{' '}
+              {selectedChannel.channel_type === 'public'
+                ? 'Público'
+                : 'Privado'}
+            </P>
             <P>Usuarios: {selectedChannel.user_count || 0}</P>
-            <P>Estado: {selectedChannel.is_active ? 'Activo' : 'Inactivo'}</P>
 
             {/* Hilos */}
             <div className="mt-3">
@@ -231,37 +228,31 @@ export const Home = () => {
             </div>
 
             {/* Vista simple del hilo */}
-            {selectedThread && (
+            {/* {selectedThread && (
               <div className="mt-6 space-y-2 border p-4 rounded-lg bg-gray-50">
                 <H1 className="text-xl">{selectedThread.title}</H1>
                 <P>Creado por: {selectedThread.created_by}</P>
                 <hr />
                 <P className="text-gray-700">(Mensajes vendrán después)</P>
               </div>
-            )}
+            )} */}
 
             {/* Editar canal */}
-            {selectedChannel.is_active && (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Nuevo nombre..."
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleUpdateChannel}>Actualizar</Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Nuevo nombre..."
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleUpdateChannel}>Actualizar</Button>
+            </div>
 
             {/* Botones de acción */}
             <div className="flex gap-2">
-              {selectedChannel.is_active ? (
-                <Button variant="destructive" onClick={handleDeleteChannel}>
-                  Eliminar
-                </Button>
-              ) : (
-                <Button onClick={handleReactivateChannel}>Reactivar</Button>
-              )}
+              <Button variant="destructive" onClick={handleDeleteChannel}>
+                Eliminar
+              </Button>
             </div>
 
             {/* Crear hilo */}
