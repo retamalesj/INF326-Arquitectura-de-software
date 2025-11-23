@@ -18,7 +18,7 @@ export const Layout = () => {
       <Navbar user={user} setUser={setUser} />
 
       {/* Contenido principal */}
-      <main className="flex-1 px-6 py-10">
+      <main className="flex-1">
         <Outlet />
       </main>
 
