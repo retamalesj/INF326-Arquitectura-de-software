@@ -78,7 +78,7 @@ export interface Channel {
 /** Obtener todos los canales */
 export const getChannels = async (): Promise<Channel[] | null> => {
   try {
-    const res = await fetch(`${API_GATEWAY_URL}/channel/channels`)
+    const res = await fetch(`${API_GATEWAY_URL}/channels`)
     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`)
     return await res.json()
   } catch (err) {

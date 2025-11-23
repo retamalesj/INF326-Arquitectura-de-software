@@ -1,18 +1,16 @@
-import { useEffect, useState } from "react"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { H1, P } from "@/components/ui/typography"
-import { Separator } from "@/components/ui/separator"
-
-interface Message {
-  id: string
-  thread_id: string
-  user_id: string
-  content: string
-  created_at: string
-}
+import { useEffect, useState } from 'react'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { H1, P } from '@/components/ui/typography'
+import { Separator } from '@/components/ui/separator'
+import {
+  getMessages,
+  sendMessage,
+  type Message,
+  type CreateMessageDTO,
+} from '../../services/chats'
 
 interface MessageSidebarProps {
   threadId: string
@@ -22,43 +20,19 @@ interface MessageSidebarProps {
 export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
-  const [newMessage, setNewMessage] = useState("")
+  const [newMessage, setNewMessage] = useState('')
 
-  const API_PREFIX = "/api/messages"
-
-  // -------------------- Fetch Messages --------------------
   const fetchMessages = async () => {
     setLoading(true)
-    try {
-      const res = await fetch(`${API_PREFIX}/threads/${threadId}/messages?limit=50`)
-      if (!res.ok) throw new Error("Error cargando mensajes")
-      const data = await res.json()
-      setMessages(data.items || [])
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+    const data = await getMessages(threadId)
+    if (data) setMessages(data)
+    setLoading(false)
   }
 
-  // -------------------- Send Message --------------------
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return
-    try {
-      const res = await fetch(`${API_PREFIX}/threads/${threadId}/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": userId,
-        },
-        body: JSON.stringify({ content: newMessage, type: "text", paths: [] }),
-      })
-      if (!res.ok) throw new Error("Error enviando mensaje")
-      setNewMessage("")
-      fetchMessages()
-    } catch (err) {
-      console.error(err)
-    }
+  const handleSend = async (msg: string) => {
+    const body: CreateMessageDTO = { content: msg, type: 'text', paths: [] }
+    await sendMessage(threadId, userId, body)
+    fetchMessages()
   }
 
   useEffect(() => {
@@ -85,7 +59,9 @@ export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
                 <div
                   key={msg.id}
                   className={`px-3 py-1 rounded-md max-w-[80%] ${
-                    msg.user_id === userId ? "bg-blue-600 text-white self-end" : "bg-gray-200 text-black self-start"
+                    msg.user_id === userId
+                      ? 'bg-blue-600 text-white self-end'
+                      : 'bg-gray-200 text-black self-start'
                   }`}
                 >
                   <P className="text-sm">{msg.content}</P>
@@ -105,7 +81,16 @@ export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
             onChange={(e) => setNewMessage(e.target.value)}
             className="flex-1"
           />
-          <Button onClick={sendMessage}>Enviar</Button>
+          <Button
+            onClick={() => {
+              if (newMessage.trim()) {
+                handleSend(newMessage)
+                setNewMessage('') // limpiar input
+              }
+            }}
+          >
+            Enviar
+          </Button>
         </div>
       </CardContent>
     </Card>
