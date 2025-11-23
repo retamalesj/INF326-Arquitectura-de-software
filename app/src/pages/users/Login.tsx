@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -6,15 +8,68 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Link } from 'react-router-dom'
 import { H1, P } from '@/components/ui/typography'
+import { toast } from 'sonner'
+
+import {
+  loginUser,
+  type LoginDTO,
+  getMe,
+  type UserProfile,
+} from '../../services/users'
+
+const DEBUG = false // <- si quieres usar perfil de prueba
 
 export const Login = () => {
-  const [email, setEmail] = useState('')
+  const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log({ email, password })
-    // Aquí iría tu lógica de login con API
+
+    setLoading(true)
+
+    try {
+      if (DEBUG) {
+        // perfil de prueba
+        const dummyProfile: UserProfile = {
+          id: 'ea4bf86d-1007-49da-8c3a-650aebb2d185',
+          email: 'prueba@prueba.cl',
+          username: 'pruebaprueba',
+          full_name: 'prueba prueba prueba',
+          is_active: true,
+        }
+        console.log('Perfil (debug):', dummyProfile)
+        toast.success(`Bienvenido ${dummyProfile.full_name}`)
+        setLoading(false)
+        return
+      }
+
+      const body: LoginDTO = {
+        username_or_email: usernameOrEmail,
+        password,
+      }
+
+      const loginResp = await loginUser(body)
+      if (!loginResp) throw new Error('Error de login')
+
+      // loginResp ya tiene { access_token, token_type }
+      console.log('Respuesta login:', loginResp)
+
+      localStorage.setItem('token', loginResp.access_token)
+
+      // ahora sí puedes usar el token para getMe
+      const profile = await getMe(loginResp.access_token)
+      if (!profile) throw new Error('No se pudo obtener perfil')
+
+      console.log('Perfil:', profile)
+      toast.success(`Bienvenido ${profile.full_name}`)
+    } catch (err: any) {
+      console.error(err)
+      toast.error(err.message || 'Error al iniciar sesión')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -30,15 +85,18 @@ export const Login = () => {
         <CardContent className="px-6 pb-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="flex flex-col space-y-1">
-              <Label htmlFor="email" className="font-medium text-gray-700">
-                Correo electrónico
+              <Label
+                htmlFor="usernameOrEmail"
+                className="font-medium text-gray-700"
+              >
+                Correo electrónico o Usuario
               </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="ejemplo@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="usernameOrEmail"
+                type="text"
+                placeholder="ejemplo@correo.com o usuario"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
                 className="text-gray-700"
               />
@@ -62,8 +120,9 @@ export const Login = () => {
             <Button
               type="submit"
               className="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              disabled={loading}
             >
-              Entrar
+              {loading ? 'Cargando...' : 'Entrar'}
             </Button>
           </form>
 
