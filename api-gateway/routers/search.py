@@ -4,55 +4,46 @@ from config import URLS
 
 router = APIRouter(prefix="/search", tags=["Search"])
 
-"""GET
-/api/presence-gateway/search/api/message/search_message
-Searchmessages
+# --- HEALTH CHECKS ---
+@router.get("/health")
+async def gw_search_health(request: Request):
+    return await forward("GET", f"{URLS['search']}/api/healthz", request)
+
+@router.get("/live")
+async def gw_search_live(request: Request):
+    return await forward("GET", f"{URLS['search']}/api/livez", request)
 
 
-GET
-/api/presence-gateway/search/api/files/search_files
-Searchfiles
+# --- BUSQUEDA DE MENSAJES ---
+# Reenvia todos los filtros (q, user_id, type_, etc.)
+@router.get("/messages")
+async def gw_search_messages(request: Request):
+    params = dict(request.query_params)
+    return await forward("GET", f"{URLS['search']}/api/message/search_message", request, params=params)
 
 
-GET
-/api/presence-gateway/search/api/threads/id/{thread_id}
-Read Id
+# --- BUSQUEDA DE CANALES ---
+@router.get("/channels")
+async def gw_search_channels(request: Request):
+    params = dict(request.query_params)
+    return await forward("GET", f"{URLS['search']}/api/channel/search_channel", request, params=params)
 
 
-GET
-/api/presence-gateway/search/api/threads/author/{created_by}
-Read Author
+# --- BUSQUEDA EN HILOS (THREADS) ---
+@router.get("/threads/id/{thread_id}")
+async def gw_search_threads_by_id(thread_id: int, request: Request):
+    return await forward("GET", f"{URLS['search']}/api/threads/id/{thread_id}", request)
 
+@router.get("/threads/author/{created_by}")
+async def gw_search_threads_by_author(created_by: int, request: Request):
+    return await forward("GET", f"{URLS['search']}/api/threads/author/{created_by}", request)
 
-GET
-/api/presence-gateway/search/api/threads/daterange
-Read Date Range
+# Este lo cambiamos a dinámico para soportar start_date, end_date y futuros filtros
+@router.get("/threads/daterange")
+async def gw_search_threads_daterange(request: Request):
+    params = dict(request.query_params)
+    return await forward("GET", f"{URLS['search']}/api/threads/daterange", request, params=params)
 
-
-GET
-/api/presence-gateway/search/api/threads/keyword/{thread_keyword}
-Read Keyword
-
-
-GET
-/api/presence-gateway/search/api/threads/status/{status}
-Read Keyword
-
-
-GET
-/api/presence-gateway/search/api/channel/search_channel
-Searchchannel
-
-
-GET
-/api/presence-gateway/search/api/healthz
-Health Check
-
-
-GET
-/api/presence-gateway/search/api/livez
-Liveness Check"""
-
-@router.get("")
-async def gw_search(q: str, request: Request):
-    return await forward("GET", f"{URLS['search']}/search", request, params={"q": q})
+@router.get("/threads/keyword/{keyword}")
+async def gw_search_threads_keyword(keyword: str, request: Request):
+    return await forward("GET", f"{URLS['search']}/api/threads/keyword/{keyword}", request)

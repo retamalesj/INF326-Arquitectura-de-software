@@ -1,34 +1,45 @@
 import httpx
 from fastapi import Request, HTTPException
 
-# --- FUNCIÓN FORWARD CORREGIDA ---
 async def forward(method: str, url: str, request: Request, body=None, params=None):
     client: httpx.AsyncClient = request.app.state.client
     
-    # 1. Copiar y limpiar headers
+    # 1. Copiar headers del request original
     headers = dict(request.headers)
     headers.pop("host", None)
     headers.pop("content-length", None)
-    headers.pop("content-type", None) # httpx lo gestiona
+    
+    # 2. Preparar argumentos base para httpx
+    req_kwargs = {
+        "method": method,
+        "url": url,
+        "params": params,
+        "follow_redirects": True,
+        "timeout": 60.0 # Aumentamos timeout por si suben archivos grandes
+    }
 
-    # 2. Limpieza de URL (manteniendo protocolo)
-    if "://" in url:
-        protocol, path = url.split("://", 1)
+    # 3. Ver si es JSON o es Archivo/Stream
+    if body is not None:
+        # ---JSON---
+        headers.pop("content-type", None)
+        req_kwargs["json"] = body
+        req_kwargs["headers"] = headers
+    else:
+        # ---STREAM---
+        req_kwargs["content"] = request.stream()
+        req_kwargs["headers"] = headers
+
+    # 4. Limpieza de URL (manteniendo protocolo)
+    if "://" in req_kwargs["url"]:
+        protocol, path = req_kwargs["url"].split("://", 1)
         path = path.replace("//", "/")
-        url = f"{protocol}://{path}"
+        req_kwargs["url"] = f"{protocol}://{path}"
 
     try:
-        r = await client.request(
-            method,
-            url,
-            json=body,
-            params=params,
-            headers=headers,
-            follow_redirects=True
-        )
+        # 5. Ejecutar la petición con los argumentos construidos
+        r = await client.request(**req_kwargs)
 
         if r.status_code >= 400:
-            # Intentar pasar el detalle del error original
             try:
                 detail = r.json()
             except:

@@ -6,21 +6,24 @@ router = APIRouter(prefix="/files", tags=["Files"])
 
 
 # ---------- ENDPOINTS ----------
+# Health Check
 @router.get("/healthz")
 async def gw_files_health(request: Request):
     return await forward("GET", f"{URLS['files']}/healthz", request)
 
+# Subir Archivo
 @router.post("/upload")
 async def gw_files_upload(request: Request):
-    body = await request.json()
-    return await forward("POST", f"{URLS['files']}/v1/files", request, body=body)
+    params = dict(request.query_params)
+    return await forward("POST", f"{URLS['files']}/v1/files", request, params=params)
 
-
+# Listar Archivos
 @router.get("")
 async def gw_files_list(request: Request):
-    return await forward("GET", f"{URLS['files']}/v1/files", request)
+    params = dict(request.query_params)
+    return await forward("GET", f"{URLS['files']}/v1/files", request, params=params)
 
-
+# Obtener Archivo por ID
 @router.get("/{file_id}")
 async def gw_files_get(file_id: str, request: Request):
     return await forward("GET", f"{URLS['files']}/v1/files/{file_id}", request)
