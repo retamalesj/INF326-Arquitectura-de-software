@@ -6,10 +6,11 @@ import { Profile } from './pages/users/Profile'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { GuestRoute } from './routes/GuestRoute'
-
+import { Toaster } from '@/components/ui/sonner'
 function App() {
   return (
     <AuthProvider>
+      <Toaster />
       <Router>
         <Routes>
           {/* Rutas públicas para usuarios no autenticados */}
@@ -52,7 +53,6 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
-
   )
 }
 

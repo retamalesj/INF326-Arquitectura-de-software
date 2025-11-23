@@ -1,1 +1,1 @@
-export const API_GATEWAY_URL = "http://0.0.0.0:8000/"
+export const API_GATEWAY_URL = 'http://localhost:8000/api/presence-gateway'
