@@ -9,9 +9,11 @@ import { GuestRoute } from './routes/GuestRoute'
 import { ModerationAdminPage } from './pages/admin/admin'
 import { Home } from './pages/home'
 
+import { Toaster } from '@/components/ui/sonner'
 function App() {
   return (
     <AuthProvider>
+      <Toaster />
       <Router>
         <Routes>
           {/* Rutas públicas para usuarios no autenticados */}
@@ -70,7 +72,6 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
-
   )
 }
 

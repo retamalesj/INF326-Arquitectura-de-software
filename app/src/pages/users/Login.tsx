@@ -1,28 +1,24 @@
-'use client'
-
-import React, { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { H1, P } from '@/components/ui/typography'
 import { toast } from 'sonner'
 
-import {
-  loginUser,
-  type LoginDTO,
-  getMe,
-  type UserProfile,
-} from '../../services/users'
-
-const DEBUG = false // <- si quieres usar perfil de prueba
+import { loginUser, type LoginDTO, getMe } from '../../services/users'
+import { AuthContext } from '@/context/AuthContext'
 
 export const Login = () => {
+  const navigate = useNavigate()
+
   const [usernameOrEmail, setUsernameOrEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const { login } = useContext(AuthContext)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,40 +26,24 @@ export const Login = () => {
     setLoading(true)
 
     try {
-      if (DEBUG) {
-        // perfil de prueba
-        const dummyProfile: UserProfile = {
-          id: 'ea4bf86d-1007-49da-8c3a-650aebb2d185',
-          email: 'prueba@prueba.cl',
-          username: 'pruebaprueba',
-          full_name: 'prueba prueba prueba',
-          is_active: true,
-        }
-        console.log('Perfil (debug):', dummyProfile)
-        toast.success(`Bienvenido ${dummyProfile.full_name}`)
-        setLoading(false)
-        return
-      }
-
       const body: LoginDTO = {
         username_or_email: usernameOrEmail,
         password,
       }
 
-      const loginResp = await loginUser(body)
-      if (!loginResp) throw new Error('Error de login')
+      const tokenData = await loginUser(body)
+      if (!tokenData) throw new Error('Error de login')
 
-      // loginResp ya tiene { access_token, token_type }
-      console.log('Respuesta login:', loginResp)
+      const profile = await getMe(tokenData.access_token)
+      if (!profile) throw new Error('Error de login')
 
-      localStorage.setItem('token', loginResp.access_token)
+      toast.success(`Bienvenido ${profile.full_name}`, {
+        position: 'top-right',
+      })
 
-      // ahora sí puedes usar el token para getMe
-      const profile = await getMe(loginResp.access_token)
-      if (!profile) throw new Error('No se pudo obtener perfil')
+      login(profile, tokenData)
 
-      console.log('Perfil:', profile)
-      toast.success(`Bienvenido ${profile.full_name}`)
+      navigate('/home')
     } catch (err: any) {
       console.error(err)
       toast.error(err.message || 'Error al iniciar sesión')
