@@ -1,14 +1,22 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { H1, P } from "@/components/ui/typography"
-import { toast } from "sonner"
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { H1, P } from '@/components/ui/typography'
+import { toast } from 'sonner'
+import { ChatBubble } from '../chats/wikichat'
 
-const API_PREFIX = "/api/presence-gateway/moderation/api/v1"
+const API_PREFIX = '/api/presence-gateway/moderation/api/v1'
 
 interface BlacklistWord {
   id: string
@@ -26,16 +34,16 @@ const DEBUG = true
 
 export const ModerationAdminPage = () => {
   const [blacklist, setBlacklist] = useState<BlacklistWord[]>([])
-  const [newWord, setNewWord] = useState("")
+  const [newWord, setNewWord] = useState('')
   const [bannedUsers, setBannedUsers] = useState<BannedUser[]>([])
 
   // ------------------- Fetch Blacklist -------------------
   const fetchBlacklist = async () => {
     if (DEBUG) {
       setBlacklist([
-        { id: "1", word: "spam" },
-        { id: "2", word: "troll" },
-        { id: "3", word: "malware" },
+        { id: '1', word: 'spam' },
+        { id: '2', word: 'troll' },
+        { id: '3', word: 'malware' },
       ])
       return
     }
@@ -45,31 +53,34 @@ export const ModerationAdminPage = () => {
       setBlacklist(data)
     } catch (err) {
       console.error(err)
-      toast.error("Error cargando blacklist")
+      toast.error('Error cargando blacklist')
     }
   }
 
   // ------------------- Add Word -------------------
   const addWord = async () => {
     if (DEBUG) {
-      setBlacklist([...blacklist, { id: Math.random().toString(), word: newWord }])
-      setNewWord("")
-      toast.success("Palabra agregada (debug)")
+      setBlacklist([
+        ...blacklist,
+        { id: Math.random().toString(), word: newWord },
+      ])
+      setNewWord('')
+      toast.success('Palabra agregada (debug)')
       return
     }
     try {
       const res = await fetch(`${API_PREFIX}/blacklist/words`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word: newWord }),
       })
-      if (!res.ok) throw new Error("Error agregando palabra")
-      setNewWord("")
+      if (!res.ok) throw new Error('Error agregando palabra')
+      setNewWord('')
       fetchBlacklist()
-      toast.success("Palabra agregada")
+      toast.success('Palabra agregada')
     } catch (err) {
       console.error(err)
-      toast.error("No se pudo agregar palabra")
+      toast.error('No se pudo agregar palabra')
     }
   }
 
@@ -77,17 +88,19 @@ export const ModerationAdminPage = () => {
   const deleteWord = async (id: string) => {
     if (DEBUG) {
       setBlacklist(blacklist.filter((w) => w.id !== id))
-      toast.success("Palabra eliminada (debug)")
+      toast.success('Palabra eliminada (debug)')
       return
     }
     try {
-      const res = await fetch(`${API_PREFIX}/blacklist/words/${id}`, { method: "DELETE" })
-      if (!res.ok) throw new Error("Error eliminando palabra")
+      const res = await fetch(`${API_PREFIX}/blacklist/words/${id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) throw new Error('Error eliminando palabra')
       fetchBlacklist()
-      toast.success("Palabra eliminada")
+      toast.success('Palabra eliminada')
     } catch (err) {
       console.error(err)
-      toast.error("No se pudo eliminar palabra")
+      toast.error('No se pudo eliminar palabra')
     }
   }
 
@@ -95,8 +108,8 @@ export const ModerationAdminPage = () => {
   const fetchBannedUsers = async () => {
     if (DEBUG) {
       setBannedUsers([
-        { id: "u1", username: "troll123", strikes: 3 },
-        { id: "u2", username: "spammer", strikes: 5 },
+        { id: 'u1', username: 'troll123', strikes: 3 },
+        { id: 'u2', username: 'spammer', strikes: 5 },
       ])
       return
     }
@@ -106,7 +119,7 @@ export const ModerationAdminPage = () => {
       setBannedUsers(data)
     } catch (err) {
       console.error(err)
-      toast.error("Error cargando usuarios baneados")
+      toast.error('Error cargando usuarios baneados')
     }
   }
 
@@ -114,17 +127,19 @@ export const ModerationAdminPage = () => {
   const unbanUser = async (userId: string) => {
     if (DEBUG) {
       setBannedUsers(bannedUsers.filter((u) => u.id !== userId))
-      toast.success("Usuario desbaneado (debug)")
+      toast.success('Usuario desbaneado (debug)')
       return
     }
     try {
-      const res = await fetch(`${API_PREFIX}/admin/users/${userId}/unban`, { method: "PUT" })
-      if (!res.ok) throw new Error("Error desbaneando usuario")
+      const res = await fetch(`${API_PREFIX}/admin/users/${userId}/unban`, {
+        method: 'PUT',
+      })
+      if (!res.ok) throw new Error('Error desbaneando usuario')
       fetchBannedUsers()
-      toast.success("Usuario desbaneado")
+      toast.success('Usuario desbaneado')
     } catch (err) {
       console.error(err)
-      toast.error("No se pudo desbanear usuario")
+      toast.error('No se pudo desbanear usuario')
     }
   }
 
@@ -135,7 +150,9 @@ export const ModerationAdminPage = () => {
 
   return (
     <div className="space-y-8 bg-white min-h-full p-6">
-      <H1 className="text-center text-blue-900">Administración de Moderación</H1>
+      <H1 className="text-center text-blue-900">
+        Administración de Moderación
+      </H1>
 
       {/* Blacklist */}
       <Card className="shadow-sm border border-gray-200">
@@ -149,7 +166,10 @@ export const ModerationAdminPage = () => {
               value={newWord}
               onChange={(e) => setNewWord(e.target.value)}
             />
-            <Button className="bg-blue-700 text-white hover:bg-blue-800" onClick={addWord}>
+            <Button
+              className="bg-blue-700 text-white hover:bg-blue-800"
+              onClick={addWord}
+            >
               Agregar
             </Button>
           </div>
@@ -213,6 +233,7 @@ export const ModerationAdminPage = () => {
               ))}
             </TableBody>
           </Table>
+          <ChatBubble />
         </CardContent>
       </Card>
     </div>
