@@ -6,6 +6,8 @@ import { Profile } from './pages/users/Profile'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { GuestRoute } from './routes/GuestRoute'
+import { ModerationAdminPage } from './pages/admin/admin'
+import { Home } from './pages/home'
 
 function App() {
   return (
@@ -44,7 +46,23 @@ function App() {
               path="/home"
               element={
                 <ProtectedRoute>
-                  <Onboarding />
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <ModerationAdminPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <ModerationAdminPage />
                 </ProtectedRoute>
               }
             />
