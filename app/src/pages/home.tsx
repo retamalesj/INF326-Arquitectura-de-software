@@ -15,7 +15,7 @@ import {
   type CreateChannelDTO,
   type UpdateChannelDTO,
 } from '../services/channel'
-import { createThread, getThreadsByChannel } from '../services/channels'
+import { createThread, getThreadsByChannel } from '../services/threads'
 
 export const Home = () => {
   const { user, loading: authLoading } = useContext(AuthContext)
@@ -54,7 +54,7 @@ export const Home = () => {
       setLoading(false)
     }
   }
-  
+
   useEffect(() => {
     fetchChannels(page, pageSize)
     setSelectedChannel(null) // ← resetea selección
