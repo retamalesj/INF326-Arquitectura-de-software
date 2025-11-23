@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { H1, P } from '@/components/ui/typography'
-import { Separator } from '@/components/ui/separator'
 import {
   getMessages,
   sendMessage,
