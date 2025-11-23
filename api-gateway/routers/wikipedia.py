@@ -2,17 +2,12 @@ from fastapi import APIRouter, Request
 from utils.forward import forward
 from config import URLS
 
-router = APIRouter(prefix="/wiki", tags=["Wikipedia"])
-"""
-GET
-/api/presence-gateway/wikipedia/health
-Health Check
+router = APIRouter(prefix="/wikipedia-chatbot", tags=["Wikipedia"])
 
+@router.get("/health")
+async def gw_wiki_health(request: Request):
+    return await forward("GET", f"{URLS['wikipedia']}/health", request)
 
-POST
-/api/presence-gateway/wikipedia/chat-wikipedia
-Chat Wikipedia
-"""
-@router.get("")
-async def gw_wiki(q: str, request: Request):
-    return await forward("GET", f"{URLS['wikipedia']}/chat", request, params={"q": q})
+@router.post("/chat-wikipedia")
+async def gw_wiki_query(request: Request):
+    return await forward("POST", f"{URLS['wikipedia']}/chat-wikipedia", request)

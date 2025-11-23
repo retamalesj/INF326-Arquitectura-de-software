@@ -7,8 +7,8 @@ URLS = {
   "messages": "https://messages-service.kroder.dev",
   "moderation": "https://moderation.inf326.nur.dev/api/v1",
   "search": "https://searchservice.inf326.nursoft.dev",
-  "wikipedia": "https://wikipedia-chatbot.inf326.cl/api",
   "files": "http://file-service-134-199-176-197.nip.io",
   "threads": "https://threads.inf326.nursoft.dev",
+  "wikipedia": "https://wikipedia-chatbot.inf326.nursoft.dev/",
   "chatbot": "https://chatbotprogra.inf326.nursoft.dev",
 }
