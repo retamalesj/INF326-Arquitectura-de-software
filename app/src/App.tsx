@@ -3,19 +3,55 @@ import { Onboarding } from './pages/Onboarding'
 import { Layout } from './components/Layout'
 import { Login } from './pages/users/Login'
 import { Profile } from './pages/users/Profile'
+import { AuthProvider } from './context/AuthContext'
+import { ProtectedRoute } from './routes/ProtectedRoute'
+import { GuestRoute } from './routes/GuestRoute'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Onboarding />} />
-        <Route path="/login" element={<Login />} />
-        <Route element={<Layout />}>
-          <Route path="/perfil" element={<Profile />} />
-          <Route path="/home" element={<Onboarding />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Rutas públicas para usuarios no autenticados */}
+          <Route
+            path="/"
+            element={
+              <GuestRoute>
+                <Onboarding />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+
+          {/* Rutas protegidas dentro del Layout */}
+          <Route element={<Layout />}>
+            <Route
+              path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 
