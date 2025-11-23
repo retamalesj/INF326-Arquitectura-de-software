@@ -22,6 +22,7 @@ interface AuthContextType {
   loading: boolean
   login: (userData: User, tokenData: TokenData) => void
   logout: () => void
+  updateUser: (newFullName: string) => void
 }
 
 // Props del proveedor
@@ -36,6 +37,7 @@ export const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
 })
 
 // Proveedor del contexto
@@ -72,8 +74,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('token')
   }
 
+  const updateUser = (newFullName: string) => {
+    if (!user) return
+
+    const updatedUser = { ...user, full_name: newFullName }
+    setUser(updatedUser)
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, updateUser, loading }}
+    >
       {children}
     </AuthContext.Provider>
   )

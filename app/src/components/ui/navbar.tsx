@@ -1,16 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from './button'
-import type { UserProfile } from '../../services/users'
+import { useContext } from 'react'
+import { AuthContext } from '@/context/AuthContext'
 
-interface NavbarProps {
-  user?: UserProfile | null
-  setUser?: React.Dispatch<React.SetStateAction<UserProfile | null>>
-}
+export const Navbar = () => {
+  const navigate = useNavigate()
 
-export const Navbar = ({ user, setUser }: NavbarProps) => {
+  const { user, logout } = useContext(AuthContext)
+
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    setUser?.(null)
+    logout()
+    navigate('/')
   }
 
   return (
@@ -20,7 +20,9 @@ export const Navbar = ({ user, setUser }: NavbarProps) => {
       <div className="flex flex-row gap-4 items-center">
         {user ? (
           <>
-            <span className="text-gray-700 font-medium">Hola, {user.full_name}</span>
+            <span className="text-gray-700 font-medium">
+              Hola, {user.full_name}
+            </span>
             <Button variant="destructive" size="sm" onClick={handleLogout}>
               Logout
             </Button>

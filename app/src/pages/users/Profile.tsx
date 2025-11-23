@@ -1,61 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { H1, P } from '@/components/ui/typography'
-import { API_GATEWAY_URL } from '@/constants'
+import { AuthContext } from '@/context/AuthContext'
+import { FiEdit, FiCheck, FiX } from 'react-icons/fi' // <-- React Icons
+import { updateMe, type UpdateMeDTO } from '@/services/users'
+import { toast } from 'sonner'
 
-const DEBUG = true
-/** ---------------- GET ME ---------------- */
-export interface UserProfile {
-  id: string
-  email: string
-  username: string
-  full_name: string
-  is_active: boolean
-}
-
-export const getMe = async (token: string): Promise<UserProfile | null> => {
-  try {
-    const response = await fetch(`${API_GATEWAY_URL}/users/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-
-    if (response.status === 401) throw new Error('No autorizado')
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`)
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error obteniendo perfil de usuario:', error)
-    return null
-  }
-}
-
-/** ---------------- COMPONENTE PROFILE ---------------- */
 export const Profile = () => {
-  const [user, setUser] = useState<UserProfile | null>(null)
-
-  const token = localStorage.getItem('token') || ''
-
-  // Perfil falso para modo DEBUG
-  const fakeUser: UserProfile = {
-    id: '123',
-    email: 'usuario@correo.com',
-    username: 'debug_user',
-    full_name: 'Usuario de Prueba',
-    is_active: true,
-  }
-
-  useEffect(() => {
-    if (DEBUG) {
-      setUser(fakeUser)
-      return
-    }
-
-    if (!token) return
-    getMe(token).then(setUser)
-  }, [token])
+  const { user, updateUser, token } = useContext(AuthContext)
+  const [isEditing, setIsEditing] = useState(false)
+  const [fullName, setFullName] = useState(user?.full_name || '')
 
   if (!user) return <P>Cargando perfil...</P>
+
+  const handleSave = async () => {
+    if (!token) return
+
+    const body: UpdateMeDTO = { full_name: fullName }
+    const updatedUser = await updateMe(token, body)
+
+    if (updatedUser) {
+      updateUser(updatedUser.full_name)
+      setIsEditing(false)
+      toast.success('Se actualizó el nombre correctamente.')
+    } else {
+      toast.error('No se pudo actualizar el nombre')
+    }
+  }
 
   return (
     <div className="flex flex-col items-center space-y-4 mt-8">
@@ -64,12 +36,12 @@ export const Profile = () => {
         <Avatar className="w-full h-full">
           <AvatarImage
             src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-              user.full_name,
+              fullName,
             )}&background=0D8ABC&color=fff`}
-            alt={user.full_name}
+            alt={fullName}
           />
           <AvatarFallback>
-            {user.full_name
+            {fullName
               .split(' ')
               .map((n) => n[0])
               .join('')
@@ -80,7 +52,42 @@ export const Profile = () => {
 
       {/* Nombre y email */}
       <div className="flex flex-col items-center text-center space-y-1">
-        <H1>{user.full_name}</H1>
+        {isEditing ? (
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="border rounded-lg px-3 py-1 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <button
+              onClick={handleSave}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg flex items-center"
+            >
+              <FiCheck className="w-5 h-5 mr-1" /> Guardar
+            </button>
+            <button
+              onClick={() => {
+                setIsEditing(false)
+                setFullName(user.full_name)
+              }}
+              className="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-lg flex items-center"
+            >
+              <FiX className="w-5 h-5 mr-1" /> Cancelar
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <H1>{fullName}</H1>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-gray-500 hover:text-blue-500 transition"
+              title="Editar nombre"
+            >
+              <FiEdit className="w-5 h-5" />
+            </button>
+          </div>
+        )}
         <P className="text-gray-500 text-sm">{user.email}</P>
       </div>
 
@@ -92,13 +99,6 @@ export const Profile = () => {
       >
         {user.is_active ? 'Online' : 'Offline'}
       </Badge>
-
-      {/* Texto DEBUG visible si está activo */}
-      {DEBUG && (
-        <P className="text-xs text-yellow-400 mt-2">
-          (DEBUG MODE — perfil simulado)
-        </P>
-      )}
     </div>
   )
 }
