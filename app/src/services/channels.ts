@@ -11,7 +11,7 @@ export interface CreateThreadDTO {
 
 export const createThread = async (body: CreateThreadDTO): Promise<string | null> => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads/`, {
+    const response = await fetch(`${API_GATEWAY_URL}/threads`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -25,9 +25,9 @@ export const createThread = async (body: CreateThreadDTO): Promise<string | null
   }
 }
 
-export const getThreadById = async (threadId: string): Promise<any | null> => {
+export const getThreadById = async (channelId: string): Promise<any | null> => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads/${threadId}`)
+    const response = await fetch(`${API_GATEWAY_URL}/threads/${channelId}`)
     if (!response.ok) throw new Error(`Error obteniendo hilo: ${response.status}`)
     return await response.json()
   } catch (error) {
@@ -67,22 +67,19 @@ export const editThread = async (threadId: string, body: EditThreadDTO): Promise
   }
 }
 
-
-export interface Channel {
-  _id: string
-  name: string
-  is_active: boolean
-  updated_at: string
+export interface ThreadSummary {
+  title: string
+  created_by: string
+  channel_id: string
 }
 
-/** Obtener todos los canales */
-export const getChannels = async (): Promise<Channel[] | null> => {
+export const getThreadsByChannel = async (channelId: string): Promise<ThreadSummary[] | null> => {
   try {
-    const res = await fetch(`${API_GATEWAY_URL}/channels`)
-    if (!res.ok) throw new Error(`Error HTTP: ${res.status}`)
-    return await res.json()
-  } catch (err) {
-    console.error("Error obteniendo canales:", err)
+    const response = await fetch(`${API_GATEWAY_URL}/threads/by-channel?channel_id=${channelId}`)
+    if (!response.ok) throw new Error(`Error obteniendo hilos: ${response.status}`)
+    return await response.json()
+  } catch (error) {
+    console.error('Error obteniendo hilos:', error)
     return null
   }
 }

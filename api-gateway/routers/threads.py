@@ -53,3 +53,18 @@ async def update_message(thread_id: str, message_id: str, request: Request):
 @router.delete("/{thread_id}/messages/{message_id}")
 async def delete_message(thread_id: str, message_id: str, request: Request):
     return await forward("DELETE", f"{URLS['threads']}/threads/{thread_id}/messages/{message_id}", request)
+    
+# -------------------------
+# Listar hilos por Canal
+# GET /threads/by-channel?channel_id=XYZ
+# -------------------------
+@router.get("/by-channel")
+async def get_threads_by_channel(channel_id: str, request: Request):
+    """
+    Devuelve todos los hilos asociados a un canal
+    Parámetros:
+      - channel_id (query): ID del canal
+    """
+    # el microservicio original usa /channel/get_threads
+    url = f"{URLS['threads']}/channel/get_threads?channel_id={channel_id}"
+    return await forward("GET", url, request)
