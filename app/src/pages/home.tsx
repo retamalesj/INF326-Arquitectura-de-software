@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { H1, H2, P } from '@/components/ui/typography'
+import { H2, H3, P } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
 import { AuthContext } from '../context/AuthContext'
 import {
@@ -192,7 +192,7 @@ export const Home = () => {
       <div className="flex-1 p-4 overflow-auto">
         {selectedChannel ? (
           <div className="space-y-4">
-            <H1>{selectedChannel.name}</H1>
+            <H3>{selectedChannel.name}</H3>
             <P>
               Tipo:{' '}
               {selectedChannel.channel_type === 'public'
@@ -228,14 +228,14 @@ export const Home = () => {
             </div>
 
             {/* Vista simple del hilo */}
-            {selectedThread && (
+            {/* {selectedThread && (
               <div className="mt-6 space-y-2 border p-4 rounded-lg bg-gray-50">
                 <H1 className="text-xl">{selectedThread.title}</H1>
                 <P>Creado por: {selectedThread.created_by}</P>
                 <hr />
                 <P className="text-gray-700">(Mensajes vendrán después)</P>
               </div>
-            )}
+            )} */}
 
             {/* Editar canal */}
             <div className="flex gap-2">
