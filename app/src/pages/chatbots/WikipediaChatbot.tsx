@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { H2 } from '@/components/ui/typography'
 import { queryWikipediaChat } from '@/services/wikipedia_chatbot'
+import TextareaAutosize from 'react-textarea-autosize'
 
 export const WikipediaChatbot = () => {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
@@ -52,7 +52,7 @@ export const WikipediaChatbot = () => {
   }
 
   return (
-    <Card className="w-full h-[550px] flex flex-col">
+    <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <H2 className="text-lg">Chatbot de Wikipedia</H2>
       </CardHeader>
@@ -76,12 +76,21 @@ export const WikipediaChatbot = () => {
           </div>
         </ScrollArea>
 
-        <div className="flex gap-2">
-          <Input
+        {/* Input y botón */}
+        <div className="flex gap-2 mt-2">
+          <TextareaAutosize
             placeholder="Escribe tu mensaje..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
+            }}
+            className="flex-1 p-2 rounded border border-gray-300 focus:outline-none focus:ring focus:ring-blue-300 resize-none overflow-auto max-h-40"
+            minRows={1} // altura mínima
+            maxRows={10} // altura máxima antes de scroll interno
             disabled={loading}
           />
           <Button onClick={handleSend} disabled={loading}>
