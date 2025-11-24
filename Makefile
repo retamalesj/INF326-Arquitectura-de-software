@@ -53,3 +53,8 @@ deploy-api-gateway:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/api-gateway-ingress.yaml
 
 	@echo "API Gateway desplegado correctamente!"
+
+clean-api-gateway:
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-service.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-deployment.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-ingress.yaml
