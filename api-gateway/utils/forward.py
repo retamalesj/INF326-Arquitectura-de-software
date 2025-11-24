@@ -9,8 +9,7 @@ async def forward(method: str, url: str, request: Request, body=None, params=Non
     headers = dict(request.headers)
     headers.pop("host", None)
     headers.pop("content-length", None)
-    
-    headers["Accept-Encoding"] = "identity"
+    headers.pop("accept-encoding", None)
 
     # 2. Preparar argumentos base para httpx
     req_kwargs = {
