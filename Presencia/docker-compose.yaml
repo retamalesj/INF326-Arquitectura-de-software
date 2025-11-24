@@ -14,7 +14,7 @@ services:
   tests:
     build: .
     container_name: presence_tests
-    command: pytest -vv app/tests
+    command: pytest -s -vv app/tests
     volumes:
       - .:/code
     depends_on:
