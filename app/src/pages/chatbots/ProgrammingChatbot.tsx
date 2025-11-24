@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { H2 } from '@/components/ui/typography'
 import { queryProgrammingChatbot } from '@/services/programming_chatbot'
+import TextareaAutosize from 'react-textarea-autosize'
 
 export const ProgrammingChatbot = () => {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
@@ -62,36 +61,41 @@ export const ProgrammingChatbot = () => {
   }
 
   return (
-    <Card className="w-full h-[550px] flex flex-col">
+    <Card className="w-full h-full flex flex-col">
       <CardHeader>
         <H2 className="text-lg">Chatbot de programación</H2>
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-2 flex-1">
-        <ScrollArea className="flex-1 rounded border p-2">
-          <div className="flex flex-col gap-3">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`max-w-[75%] px-3 py-2 rounded-xl text-sm shadow
-                  ${
-                    msg.sender === 'user'
-                      ? 'self-end bg-primary text-white'
-                      : 'self-start bg-muted'
-                  }`}
-              >
-                {formatMessage(msg.text)}
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+      <CardContent className="flex flex-col flex-1 p-2">
+        {/* Contenedor de mensajes scrollable */}
+        <div className="flex-1 overflow-auto flex flex-col gap-3 p-2">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`px-3 py-2 rounded-xl text-sm shadow max-w-[80%] break-words
+            ${msg.sender === 'user' ? 'self-end bg-primary text-white' : 'self-start bg-muted'}
+          `}
+            >
+              {formatMessage(msg.text)}
+            </div>
+          ))}
+        </div>
 
-        <div className="flex gap-2">
-          <Input
+        {/* Input y botón */}
+        <div className="flex gap-2 mt-2">
+          <TextareaAutosize
             placeholder="Escribe tu mensaje..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
+            }}
+            className="flex-1 p-2 rounded border border-gray-300 focus:outline-none focus:ring focus:ring-blue-300 resize-none overflow-auto max-h-40"
+            minRows={1} // altura mínima
+            maxRows={10} // altura máxima antes de scroll interno
             disabled={loading}
           />
           <Button onClick={handleSend} disabled={loading}>
