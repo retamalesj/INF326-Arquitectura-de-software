@@ -16,6 +16,7 @@ import {
 } from '../services/channel'
 import { createThread, getThreadsByChannel } from '../services/threads'
 import { toast } from 'sonner'
+import { FiEdit, FiCheck, FiX } from 'react-icons/fi'
 
 export const Home = () => {
   const { user, loading: authLoading } = useContext(AuthContext)
@@ -29,7 +30,9 @@ export const Home = () => {
   const [selectedThread, setSelectedThread] = useState<any | null>(null)
 
   const [newChannelName, setNewChannelName] = useState('')
-  const [editName, setEditName] = useState('')
+  const [editChannelName, setEditChannelName] = useState('')
+  const [isEditingChannel, setIsEditingChannel] = useState(false)
+
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -40,15 +43,15 @@ export const Home = () => {
       const data = await getChannels(p, ps)
       if (data) {
         setChannels(data)
-
-        // Mantener selección si sigue en la página
         if (!selectedChannel && data.length > 0) {
           setSelectedChannel(data[0])
+          setEditChannelName(data[0].name)
         } else if (
           selectedChannel &&
           !data.some((c) => c.id === selectedChannel.id)
         ) {
           setSelectedChannel(data[0] || null)
+          setEditChannelName(data[0]?.name || '')
         }
       }
     } catch (err) {
@@ -71,6 +74,8 @@ export const Home = () => {
       setThreads(res || [])
       setSelectedThread(null)
       setLoadingThreads(false)
+      setEditChannelName(selectedChannel.name)
+      setIsEditingChannel(false)
     }
     fetchThreads()
   }, [selectedChannel])
@@ -86,7 +91,6 @@ export const Home = () => {
       channel_type: 'public',
       owner_id: user.id,
     }
-
     const ch = await createChannel(body)
     if (ch) {
       await fetchChannels(page, pageSize)
@@ -97,14 +101,15 @@ export const Home = () => {
   }
 
   /** Actualizar canal */
-  const handleUpdateChannel = async () => {
-    if (!selectedChannel?.id || !editName.trim()) return
-    const body: UpdateChannelDTO = { name: editName.trim() }
+  const handleSaveChannelName = async () => {
+    if (!selectedChannel?.id || !editChannelName.trim()) return
+    const body: UpdateChannelDTO = { name: editChannelName.trim() }
     const ch = await updateChannel(selectedChannel.id, body)
     if (ch) {
       setChannels((prev) => prev.map((c) => (c.id === ch.id ? ch : c)))
       setSelectedChannel(ch)
-      setEditName('')
+      setIsEditingChannel(false)
+      toast.success(`Se actualizó el nombre del canal a ${ch.name}`)
     }
   }
 
@@ -140,7 +145,11 @@ export const Home = () => {
                   variant={
                     selectedChannel?.id === ch.id ? 'default' : 'outline'
                   }
-                  className={`justify-start ${selectedChannel?.id === ch.id ? '' : 'border-1 border-gray-300'}`}
+                  className={`justify-start ${
+                    selectedChannel?.id === ch.id
+                      ? ''
+                      : 'border-1 border-gray-300'
+                  }`}
                   onClick={() => setSelectedChannel(ch)}
                 >
                   {ch.name}
@@ -167,16 +176,13 @@ export const Home = () => {
           >
             &lt;
           </Button>
-
           <span>Pág. {page}</span>
-
           <Button
             disabled={channels.length < pageSize}
             onClick={() => setPage((prev) => prev + 1)}
           >
             &gt;
           </Button>
-
           <select
             className="border rounded p-1 ml-3"
             value={pageSize}
@@ -190,22 +196,59 @@ export const Home = () => {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex p-4 overflow-auto">
+      <div className="flex p-4 overflow-auto w-full">
         {selectedChannel ? (
-          <div className="space-y-4">
-            <H3>{selectedChannel.name}</H3>
-            <P>
-              Tipo:{' '}
-              {selectedChannel.channel_type === 'public'
-                ? 'Público'
-                : 'Privado'}
-            </P>
-            <P>Usuarios: {selectedChannel.user_count || 0}</P>
+          <div className="space-y-4 w-full">
+            {/* Nombre del canal editable */}
+            <div className="flex flex-col items-center text-center space-y-1">
+              {isEditingChannel ? (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    value={editChannelName}
+                    onChange={(e) => setEditChannelName(e.target.value)}
+                    className="px-3 py-1"
+                  />
+                  <Button
+                    onClick={handleSaveChannelName}
+                    className="bg-green-500 hover:bg-green-600 text-white flex items-center"
+                  >
+                    <FiCheck className="w-5 h-5 mr-1" /> Guardar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsEditingChannel(false)
+                      setEditChannelName(selectedChannel.name)
+                    }}
+                    className="bg-red-400 hover:bg-red-500 text-white flex items-center"
+                  >
+                    <FiX className="w-5 h-5 mr-1" /> Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <H3>{selectedChannel.name}</H3>
+                  <button
+                    onClick={() => setIsEditingChannel(true)}
+                    className="text-gray-500 hover:text-blue-500 transition"
+                    title="Editar nombre del canal"
+                  >
+                    <FiEdit className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+              <P>
+                Tipo:{' '}
+                {selectedChannel.channel_type === 'public'
+                  ? 'Público'
+                  : 'Privado'}
+              </P>
+              <P>Usuarios: {selectedChannel.user_count || 0}</P>
+            </div>
 
             {/* Hilos */}
             <div className="mt-3">
               <P className="font-semibold mb-1">Hilos del canal:</P>
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex flex-col gap-2 overflow-x-auto pb-2">
                 {loadingThreads ? (
                   <P>Cargando hilos...</P>
                 ) : threads.length === 0 ? (
@@ -226,27 +269,6 @@ export const Home = () => {
                   ))
                 )}
               </div>
-            </div>
-
-            {/* Vista simple del hilo */}
-            {/* {selectedThread && (
-              <div className="mt-6 space-y-2 border p-4 rounded-lg bg-gray-50">
-                <H1 className="text-xl">{selectedThread.title}</H1>
-                <P>Creado por: {selectedThread.created_by}</P>
-                <hr />
-                <P className="text-gray-700">(Mensajes vendrán después)</P>
-              </div>
-            )} */}
-
-            {/* Editar canal */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Nuevo nombre..."
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={handleUpdateChannel}>Actualizar</Button>
             </div>
 
             {/* Botones de acción */}
