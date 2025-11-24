@@ -12,10 +12,14 @@ export function Calculator() {
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [clickedMethod, setClickedMethod] = useState<
+    'solve' | 'integrate' | 'derive' | null
+  >(null)
 
   const handleCalculate = async (
     endpoint: 'solve' | 'integrate' | 'derive',
   ) => {
+    setClickedMethod(endpoint)
     setLoading(true)
     setError(null)
     setResult(null)
@@ -98,6 +102,12 @@ export function Calculator() {
           >
             Derivar d/dx
           </button>
+        </div>
+
+        <div className="mb-2 text-sm">
+          {clickedMethod
+            ? `Método seleccionado: ${clickedMethod === 'solve' ? 'Resolver Ecuación' : clickedMethod === 'integrate' ? 'Integrar ∫' : 'Derivar d/dx'}`
+            : 'Selecciona un método para calcular'}
         </div>
 
         <div className="bg-gray-900 rounded-lg p-6 min-h-[120px] border border-gray-700 relative overflow-hidden">
