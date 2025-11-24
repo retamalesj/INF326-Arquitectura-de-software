@@ -27,6 +27,15 @@ def mock_dependencies(monkeypatch):
             if self.query and self.query.get("status") == "online":
                 return [u for u in self.data if u["status"] == "online"]
             return self.data
+    async def count_documents_mock(query=None):
+        if query is None:
+            return 5          # total
+        if query.get("status") == "online":
+            return 3
+        if query.get("status") == "offline":
+            return 2
+        return 0
+
 
     monkeypatch.setattr(
         main.presences_collection,
@@ -36,7 +45,11 @@ def mock_dependencies(monkeypatch):
     monkeypatch.setattr(main.presences_collection, "find_one", AsyncMock(return_value=None))
     monkeypatch.setattr(main.presences_collection, "update_one", AsyncMock(return_value=None))
     monkeypatch.setattr(main.presences_collection, "delete_one", AsyncMock(return_value=type("obj", (), {"deleted_count": 1})))
-    monkeypatch.setattr(main.presences_collection, "count_documents", AsyncMock(return_value=0))
+    monkeypatch.setattr(
+        main.presences_collection,
+        "count_documents",
+        AsyncMock(side_effect=count_documents_mock)
+    )
 
     # --- Mock comando "ping" de health_check ---
     monkeypatch.setattr(main.db, "command", AsyncMock(return_value={"ok": 1}))
