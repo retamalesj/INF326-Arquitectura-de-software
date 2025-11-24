@@ -23,14 +23,11 @@ export const Messages = ({ threadId, threadName }: MessagesProps) => {
   if (!user) return
 
   const [messages, setMessages] = useState<Message[]>([])
-  const [loading, setLoading] = useState(false)
   const [newMessage, setNewMessage] = useState('')
 
   const fetchMessages = async () => {
-    setLoading(true)
     const data = await getMessages(threadId)
     if (data) setMessages(data)
-    setLoading(false)
   }
 
   const handleSend = async (msg: string) => {
@@ -51,9 +48,7 @@ export const Messages = ({ threadId, threadName }: MessagesProps) => {
         <H4>#{threadName}</H4>
         <ScrollArea className="flex-1 mt-4 mb-4">
           <div className="flex flex-col gap-2">
-            {loading ? (
-              <P>Cargando...</P>
-            ) : messages.length === 0 ? (
+            {messages.length === 0 ? (
               <P className="text-gray-500">No hay mensajes</P>
             ) : (
               messages.map((msg) => (

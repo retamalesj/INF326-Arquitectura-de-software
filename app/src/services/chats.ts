@@ -26,7 +26,15 @@ export const getMessages = async (
     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`)
     const data = await res.json()
 
-    return data.items || []
+    const items: Message[] = data.items || []
+
+    //  Ordenar ASC por fecha (viejo → nuevo)
+    items.sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    )
+
+    return items
   } catch (err) {
     console.error('Error obteniendo mensajes:', err)
     return null
