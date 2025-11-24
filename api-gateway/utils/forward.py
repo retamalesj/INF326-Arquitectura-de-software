@@ -1,5 +1,6 @@
 import httpx
 from fastapi import Request, HTTPException
+from fastapi.responses import Response
 
 async def forward(method: str, url: str, request: Request, body=None, params=None):
     client: httpx.AsyncClient = request.app.state.client
@@ -48,10 +49,7 @@ async def forward(method: str, url: str, request: Request, body=None, params=Non
                 detail = r.text
             raise HTTPException(status_code=r.status_code, detail=detail)
 
-        try:
-            return r.json()
-        except Exception:
-            return r.text # Devuelve texto si no es JSON
+        return Response(content=r.content, media_type=r.headers.get("content-type", "application/octet-stream"), status_code=r.status_code)
 
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Gateway Timeout: El microservicio tardó demasiado.")
