@@ -11,4 +11,5 @@ URLS = {
   "threads": "https://threads.inf326.nursoft.dev",
   "wikipedia": "https://wikipedia-chatbot.inf326.nursoft.dev/",
   "chatbot": "https://chatbotprogra.inf326.nursoft.dev",
+  "calculator": "https://calculadora.inf326.nursoft.dev",
 }

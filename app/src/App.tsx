@@ -8,9 +8,11 @@ import { ProtectedRoute } from './routes/ProtectedRoute'
 import { GuestRoute } from './routes/GuestRoute'
 import { ModerationAdminPage } from './pages/admin/admin'
 import { Home } from './pages/home'
+import { Calculator } from './pages/Calculator' 
 
 import { Toaster } from '@/components/ui/sonner'
 import { Register } from './pages/users/Register'
+
 function App() {
   return (
     <AuthProvider>
@@ -62,10 +64,10 @@ function App() {
               }
             />
             <Route
-              path="/admin"
+              path="/calculator"
               element={
                 <ProtectedRoute>
-                  <ModerationAdminPage />
+                  <Calculator />
                 </ProtectedRoute>
               }
             />
