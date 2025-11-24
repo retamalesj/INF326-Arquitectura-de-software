@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, HTTPException
 from utils.forward import forward
 from config import URLS
 
-router = APIRouter(prefix="/calculator", tags=["Calculator"])
+router = APIRouter(prefix="/calculator", tags=["Chatbot de cálculo"])
 
 # ---------------------------------------------------------
 # Algebra basica, Cuadraticas

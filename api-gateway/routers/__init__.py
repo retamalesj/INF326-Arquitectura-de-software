@@ -1,6 +1,6 @@
 from .presence import router as presence
 from .users import router as users
-from .chatbot import router as chatbot
+from .programmingChatbot import router as programmingChatbot
 from .wikipedia import router as wikipedia
 from .moderation import router as moderation
 from .threads import router as threads
@@ -15,7 +15,7 @@ from .channels.members import router as members
 __all__ = [
   "presence",
   "users",
-  "chatbot",
+  "programmingChatbot",
   "wikipedia",
   "moderation",
   "threads",

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from utils.forward import forward
 from config import URLS
 
-router = APIRouter(prefix="/wikipedia-chatbot", tags=["Wikipedia"])
+router = APIRouter(prefix="/wikipedia-chatbot", tags=["Chatbot de wikipedia"])
 
 @router.get("/health")
 async def gw_wiki_health(request: Request):
