@@ -188,7 +188,7 @@ export const Home = () => {
                   }
                   className={`justify-start ${
                     selectedChannel?.id === ch.id
-                      ? ''
+                      ? 'bg-blue-600'
                       : 'border-1 border-gray-300'
                   }`}
                   onClick={() => setSelectedChannel(ch)}
@@ -210,7 +210,7 @@ export const Home = () => {
                           onClick={() => setSelectedThread(th)}
                           className={`cursor-pointer px-3 py-1 border hover:bg-gray-100 ${
                             selectedThread?.id === th.id
-                              ? 'bg-gray-200 border-black'
+                              ? 'border-neutral-300'
                               : ''
                           }`}
                         >
