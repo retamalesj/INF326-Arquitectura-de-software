@@ -140,24 +140,75 @@ export const Home = () => {
           ) : (
             <div className="flex flex-col gap-2 w-full">
               {channels.map((ch) => (
-                <Button
-                  key={ch.id}
-                  variant={
-                    selectedChannel?.id === ch.id ? 'default' : 'outline'
-                  }
-                  className={`justify-start ${
-                    selectedChannel?.id === ch.id
-                      ? ''
-                      : 'border-1 border-gray-300'
-                  }`}
-                  onClick={() => setSelectedChannel(ch)}
-                >
-                  {ch.name}
-                </Button>
+                <div key={ch.id} className="flex flex-col w-full">
+                  <Button
+                    variant={
+                      selectedChannel?.id === ch.id ? 'default' : 'outline'
+                    }
+                    className={`justify-start ${
+                      selectedChannel?.id === ch.id
+                        ? ''
+                        : 'border-1 border-gray-300'
+                    }`}
+                    onClick={() => setSelectedChannel(ch)}
+                  >
+                    {ch.name}
+                  </Button>
+
+                  {/* Hilos solo para el canal seleccionado */}
+                  {selectedChannel?.id === ch.id && (
+                    <div className="flex flex-col gap-1 pl-4 mt-1">
+                      {loadingThreads ? (
+                        <P>Cargando hilos...</P>
+                      ) : threads.length === 0 ? (
+                        <P className="text-gray-500">No hay hilos</P>
+                      ) : (
+                        threads.map((th) => (
+                          <Card
+                            key={th.id}
+                            onClick={() => setSelectedThread(th)}
+                            className={`cursor-pointer px-3 py-1 border hover:bg-gray-100 ${
+                              selectedThread?.id === th.id
+                                ? 'bg-gray-200 border-black'
+                                : ''
+                            }`}
+                          >
+                            #{th.title}
+                          </Card>
+                        ))
+                      )}
+
+                      {/* Botón + Crear hilo */}
+                      <button
+                        className="flex items-center justify-start gap-2 px-3 py-1 text-gray-500 hover:bg-gray-200 rounded w-full"
+                        onClick={() => {
+                          const title = prompt('Nombre del nuevo hilo:')
+                          if (!title?.trim()) return
+                          const body = {
+                            channel_id: selectedChannel.id,
+                            title: title.trim(),
+                            created_by: user.id,
+                          }
+                          createThread(body).then((th) => {
+                            if (th) {
+                              setThreads((prev) => [...prev, th])
+                              setSelectedThread(th)
+                              toast.success(`Se creó el hilo "${title.trim()}"`)
+                            }
+                          })
+                        }}
+                      >
+                        <span className="text-lg font-bold">+</span>
+                        <span>Crear hilo</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </ScrollArea>
+
         <div className="p-2 border-t border-gray-200 flex gap-2 mt-auto">
           <Input
             placeholder="Nuevo canal..."
@@ -200,7 +251,7 @@ export const Home = () => {
         {selectedChannel ? (
           <div className="space-y-4 w-full">
             {/* Nombre del canal editable */}
-            <div className="flex flex-col items-center text-center space-y-1">
+            <div className="flex flex-col items-start text-center space-y-1">
               {isEditingChannel ? (
                 <div className="flex items-center space-x-2">
                   <Input
@@ -245,64 +296,10 @@ export const Home = () => {
               <P>Usuarios: {selectedChannel.user_count || 0}</P>
             </div>
 
-            {/* Hilos */}
-            <div className="mt-3">
-              <P className="font-semibold mb-1">Hilos del canal:</P>
-              <div className="flex flex-col gap-2 overflow-x-auto pb-2">
-                {loadingThreads ? (
-                  <P>Cargando hilos...</P>
-                ) : threads.length === 0 ? (
-                  <P className="text-gray-500">No hay hilos</P>
-                ) : (
-                  threads.map((th) => (
-                    <Card
-                      key={th.id}
-                      onClick={() => setSelectedThread(th)}
-                      className={`cursor-pointer px-4 py-2 border hover:bg-gray-100 ${
-                        selectedThread?.id === th.id
-                          ? 'bg-gray-200 border-black'
-                          : ''
-                      }`}
-                    >
-                      {th.title}
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-
             {/* Botones de acción */}
             <div className="flex gap-2">
               <Button variant="destructive" onClick={handleDeleteChannel}>
-                Eliminar
-              </Button>
-            </div>
-
-            {/* Crear hilo */}
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Nuevo hilo..."
-                value={newThreadTitle}
-                onChange={(e) => setNewThreadTitle(e.target.value)}
-                className="flex-1"
-              />
-              <Button
-                onClick={async () => {
-                  if (!newThreadTitle.trim() || !selectedChannel?.id) return
-                  const body = {
-                    channel_id: selectedChannel.id,
-                    title: newThreadTitle.trim(),
-                    created_by: user.id,
-                  }
-                  const th = await createThread(body)
-                  if (th) {
-                    setThreads((prev) => [...prev, th])
-                    setNewThreadTitle('')
-                    setSelectedThread(th)
-                  }
-                }}
-              >
-                Crear
+                Eliminar canal
               </Button>
             </div>
           </div>
