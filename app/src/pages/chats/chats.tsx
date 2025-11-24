@@ -51,21 +51,38 @@ export const Messages = ({ threadId, threadName }: MessagesProps) => {
             {messages.length === 0 ? (
               <P className="text-gray-500">No hay mensajes</P>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`px-3 py-1 rounded-md max-w-[80%] ${
-                    msg.user_id === user.id
-                      ? 'bg-blue-600 text-white self-end'
-                      : 'bg-gray-200 text-black self-start'
-                  }`}
-                >
-                  <P className="text-sm">{msg.content}</P>
-                  <P className="text-xs text-right">
-                    {new Date(msg.created_at).toLocaleTimeString()}
-                  </P>
-                </div>
-              ))
+              messages.map((msg) => {
+                const isMine = msg.user_id === user.id
+
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-2 items-start ${
+                      isMine ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    {!isMine && (
+                      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-xs font-bold text-gray-700">
+                        {msg.user_id.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+
+                    {/* BURBUJA */}
+                    <div
+                      className={`px-3 py-1 rounded-md max-w-[70%] ${
+                        isMine
+                          ? 'bg-blue-600 text-white self-end'
+                          : 'bg-gray-200 text-black self-start'
+                      }`}
+                    >
+                      <P className="text-sm">{msg.content}</P>
+                      <P className="text-xs text-right">
+                        {new Date(msg.created_at).toLocaleTimeString()}
+                      </P>
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         </ScrollArea>
