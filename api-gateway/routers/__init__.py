@@ -7,6 +7,7 @@ from .threads import router as threads
 from .search import router as search
 from .files import router as files
 from .messages import router as messages
+from .calculator import router as calculator
 
 from .channels.channels import router as channels
 from .channels.members import router as members
@@ -22,5 +23,6 @@ __all__ = [
   "files",
   "messages",
   "channels",
-  "members"
+  "members",
+  "calculator"
 ]
