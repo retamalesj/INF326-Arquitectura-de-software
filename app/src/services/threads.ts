@@ -4,23 +4,26 @@ import { API_GATEWAY_URL } from '../constants'
 
 export interface CreateThreadDTO {
   channel_id: string
-  title: string
-  created_by: string
-  metadata?: Record<string, any>
+  thread_name: string
+  user_id: string
 }
 
-export const createThread = async (
-  body: CreateThreadDTO,
-): Promise<string | null> => {
+export const createThread = async (params: CreateThreadDTO) => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads`, {
+    // Forzar a Record<string, string>
+    const query = new URLSearchParams(
+      Object.fromEntries(
+        Object.entries(params).map(([key, value]) => [key, String(value)]),
+      ),
+    ).toString()
+
+    const response = await fetch(`${API_GATEWAY_URL}/threads/?${query}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
     })
 
     if (!response.ok) throw new Error(`Error creando hilo: ${response.status}`)
-    return await response.text() // devuelve el ID del hilo
+    return await response.json()
   } catch (error) {
     console.error('Error creando hilo:', error)
     return null

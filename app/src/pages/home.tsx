@@ -224,12 +224,20 @@ export const Home = () => {
                         if (!title?.trim()) return
                         const body = {
                           channel_id: selectedChannel.id,
-                          title: title.trim(),
-                          created_by: user.id,
+                          thread_name: title.trim(),
+                          user_id: user.id,
                         }
+
                         createThread(body).then((th) => {
                           if (th) {
-                            setThreads((prev) => [...prev, th])
+                            setThreads((prev) => [
+                              ...prev,
+                              {
+                                thread_id: th.thread_id,
+                                title: th.title,
+                                created_by: th.created_by,
+                              },
+                            ])
                             setSelectedThread(th)
                             toast.success(`Se creó el hilo "${title.trim()}"`)
                           }
