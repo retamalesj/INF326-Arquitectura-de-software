@@ -2,10 +2,12 @@ import { Sidebar } from '@/components/ui/sidebar'
 import { useState } from 'react'
 import { CalculatorChatbot } from './chatbots/CalculatorChatbot'
 import { WikipediaChatbot } from './chatbots/WikipediaChatbot'
+import { ProgrammingChatbot } from './chatbots/ProgrammingChatbot'
 
 const chatbots = [
   { name: 'Calculadora', component: <CalculatorChatbot /> },
   { name: 'Wikipedia', component: <WikipediaChatbot /> },
+  { name: 'Programación', component: <ProgrammingChatbot /> },
 ]
 
 export const Chatbots = () => {
