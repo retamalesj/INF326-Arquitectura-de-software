@@ -14,13 +14,14 @@ services:
   tests:
     build: .
     container_name: presence_tests
-    command: pytest -s -vv app/tests
+    command: pytest -s -vv -W ignore::DeprecationWarning app/tests
     volumes:
       - .:/code
     depends_on:
       - presencia       
     networks:
       - demo_04
+    
   mongodb_presencia:
     image: mongo:7
     container_name: presence_mongo
