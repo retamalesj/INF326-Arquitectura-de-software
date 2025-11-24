@@ -11,7 +11,16 @@ services:
       - rabbitmq
     networks:
       - demo_04
-
+  tests:
+    build: .
+    container_name: presence_tests
+    command: pytest -vv app/tests
+    volumes:
+      - .:/code
+    depends_on:
+      - presencia        # 👈 Ejecuta los tests solo después de que el servicio está levantado
+    networks:
+      - demo_04
   mongodb_presencia:
     image: mongo:7
     container_name: presence_mongo

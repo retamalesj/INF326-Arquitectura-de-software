@@ -1,7 +1,9 @@
 # exceptions.py
 from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 import logging
+
 
 logger = logging.getLogger("presence_service")
 
@@ -36,4 +38,10 @@ def register_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=500,
             content={"status": "ERROR", "message": "Error interno del servidor", "data": None},
+        )
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "El campo 'userId' es obligatorio."},
         )
