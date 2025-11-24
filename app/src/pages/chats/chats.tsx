@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from 'react'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { H1, P } from '@/components/ui/typography'
+import { P } from '@/components/ui/typography'
 import {
   getMessages,
   sendMessage,
@@ -12,13 +12,13 @@ import {
 } from '../../services/chats'
 import { AuthContext } from '@/context/AuthContext'
 
-interface MessageSidebarProps {
+interface MessagesProps {
   threadId: string
 }
 
-export const MessageSidebar = ({ threadId }: MessageSidebarProps) => {
+export const Messages = ({ threadId }: MessagesProps) => {
   const { user } = useContext(AuthContext)
-  
+
   if (!user) return
 
   const [messages, setMessages] = useState<Message[]>([])
@@ -45,11 +45,7 @@ export const MessageSidebar = ({ threadId }: MessageSidebarProps) => {
   }, [threadId])
 
   return (
-    <Card className="w-80 h-screen fixed top-0 right-0 flex flex-col bg-gray-50 border-l border-gray-200">
-      <CardHeader className="py-4">
-        <H1>Mensajes</H1>
-      </CardHeader>
-
+    <Card className="flex flex-col bg-gray-50 border-l border-gray-200 w-full">
       <CardContent className="flex-1 flex flex-col">
         <ScrollArea className="flex-1 mb-4">
           <div className="flex flex-col gap-2">

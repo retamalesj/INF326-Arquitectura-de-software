@@ -1,8 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { H2, H3, P } from '@/components/ui/typography'
+import { H3, P } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
 import { AuthContext } from '../context/AuthContext'
 import {
@@ -17,7 +16,7 @@ import {
 import { createThread, getThreadsByChannel } from '../services/threads'
 import { toast } from 'sonner'
 import { FiEdit, FiCheck, FiX } from 'react-icons/fi'
-import { MessageSidebar } from './chats/chats'
+import { Messages } from './chats/chats'
 import { Sidebar } from '@/components/ui/sidebar'
 
 export const Home = () => {
@@ -305,7 +304,7 @@ export const Home = () => {
               </Button>
             </div>
 
-            {selectedThread && <MessageSidebar threadId={selectedThread.id} />}
+            {selectedThread && <Messages threadId={selectedThread.id} />}
           </div>
         ) : (
           <P className="text-gray-500">Selecciona un canal para ver detalles</P>
