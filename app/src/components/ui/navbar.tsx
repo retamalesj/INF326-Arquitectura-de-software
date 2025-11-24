@@ -20,6 +20,17 @@ export const Navbar = () => {
       <div className="flex flex-row gap-4 items-center">
         {user ? (
           <>
+            <Link to="/home">
+              <Button variant="outline" size="sm">
+                Canales
+              </Button>
+            </Link>
+            <Link to="/chatbots">
+              <Button variant="outline" size="sm">
+                Chatbots
+              </Button>
+            </Link>
+
             <span className="text-gray-700 font-medium">
               Hola, {user.full_name}
             </span>

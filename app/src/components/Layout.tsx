@@ -3,12 +3,12 @@ import { Navbar } from './ui/navbar'
 
 export const Layout = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="flex flex-col bg-white h-screen">
       {/* Navbar */}
       <Navbar />
 
       {/* Contenido principal */}
-      <main className="flex-1">
+      <main className="flex-1 flex">
         <Outlet />
       </main>
 

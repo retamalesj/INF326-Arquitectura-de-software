@@ -18,6 +18,7 @@ import { createThread, getThreadsByChannel } from '../services/threads'
 import { toast } from 'sonner'
 import { FiEdit, FiCheck, FiX } from 'react-icons/fi'
 import { MessageSidebar } from './chats/chats'
+import { Sidebar } from '@/components/ui/sidebar'
 
 export const Home = () => {
   const { user, loading: authLoading } = useContext(AuthContext)
@@ -129,122 +130,123 @@ export const Home = () => {
   return (
     <div className="flex w-full">
       {/* Sidebar de canales */}
-      <div className="w-74 h-full border-1 border-t-gray-200 border-r-gray-300 flex flex-col bg-gray-50 items-start px-6 h-full">
-        <H2 className="text-start mb-4">Canales</H2>
-
-        <ScrollArea className="flex-1 w-full overflow-x-hidden overflow-y-auto">
-          {loading ? (
-            <P>Cargando canales...</P>
-          ) : channels.length === 0 ? (
-            <P className="text-gray-500">No hay canales</P>
-          ) : (
-            <div className="flex flex-col gap-2 w-full">
-              {channels.map((ch) => (
-                <div key={ch.id} className="flex flex-col w-full">
-                  <Button
-                    variant={
-                      selectedChannel?.id === ch.id ? 'default' : 'outline'
-                    }
-                    className={`justify-start ${
-                      selectedChannel?.id === ch.id
-                        ? ''
-                        : 'border-1 border-gray-300'
-                    }`}
-                    onClick={() => setSelectedChannel(ch)}
-                  >
-                    {ch.name}
-                  </Button>
-
-                  {/* Hilos solo para el canal seleccionado */}
-                  {selectedChannel?.id === ch.id && (
-                    <div className="flex flex-col gap-1 pl-4 mt-1">
-                      {loadingThreads ? (
-                        <P>Cargando hilos...</P>
-                      ) : threads.length === 0 ? (
-                        <P className="text-gray-500">No hay hilos</P>
-                      ) : (
-                        threads.map((th) => (
-                          <Card
-                            key={th.id}
-                            onClick={() => setSelectedThread(th)}
-                            className={`cursor-pointer px-3 py-1 border hover:bg-gray-100 ${
-                              selectedThread?.id === th.id
-                                ? 'bg-gray-200 border-black'
-                                : ''
-                            }`}
-                          >
-                            #{th.title}
-                          </Card>
-                        ))
-                      )}
-
-                      {/* Botón + Crear hilo */}
-                      <button
-                        className="flex items-center justify-start gap-2 px-3 py-1 text-gray-500 hover:bg-gray-200 rounded w-full"
-                        onClick={() => {
-                          const title = prompt('Nombre del nuevo hilo:')
-                          if (!title?.trim()) return
-                          const body = {
-                            channel_id: selectedChannel.id,
-                            title: title.trim(),
-                            created_by: user.id,
-                          }
-                          createThread(body).then((th) => {
-                            if (th) {
-                              setThreads((prev) => [...prev, th])
-                              setSelectedThread(th)
-                              toast.success(`Se creó el hilo "${title.trim()}"`)
-                            }
-                          })
-                        }}
-                      >
-                        <span className="text-lg font-bold">+</span>
-                        <span>Crear hilo</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+      <Sidebar
+        title="Canales"
+        footer={
+          <>
+            <div className="p-2 border-t border-gray-200 flex gap-2 mt-auto">
+              <Input
+                placeholder="Nuevo canal..."
+                value={newChannelName}
+                onChange={(e) => setNewChannelName(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleCreateChannel}>Crear</Button>
             </div>
-          )}
-        </ScrollArea>
 
-        <div className="p-2 border-t border-gray-200 flex gap-2 mt-auto">
-          <Input
-            placeholder="Nuevo canal..."
-            value={newChannelName}
-            onChange={(e) => setNewChannelName(e.target.value)}
-            className="flex-1"
-          />
-          <Button onClick={handleCreateChannel}>Crear</Button>
-        </div>
+            {/* Botones anterior y siguiente */}
+            <div className="flex gap-2 items-center px-2 py-2">
+              <Button
+                disabled={page === 1}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              >
+                &lt;
+              </Button>
+              <span>Pág. {page}</span>
+              <Button
+                disabled={channels.length < pageSize}
+                onClick={() => setPage((prev) => prev + 1)}
+              >
+                &gt;
+              </Button>
+              <select
+                className="border rounded p-1 ml-3"
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
+          </>
+        }
+      >
+        {loading ? (
+          <P>Cargando canales...</P>
+        ) : channels.length === 0 ? (
+          <P className="text-gray-500">No hay canales</P>
+        ) : (
+          <div className="flex flex-col gap-2 w-full">
+            {channels.map((ch) => (
+              <div key={ch.id} className="flex flex-col w-full">
+                <Button
+                  variant={
+                    selectedChannel?.id === ch.id ? 'default' : 'outline'
+                  }
+                  className={`justify-start ${
+                    selectedChannel?.id === ch.id
+                      ? ''
+                      : 'border-1 border-gray-300'
+                  }`}
+                  onClick={() => setSelectedChannel(ch)}
+                >
+                  {ch.name}
+                </Button>
 
-        {/* Botones anterior y siguiente */}
-        <div className="flex gap-2 items-center px-2 py-2">
-          <Button
-            disabled={page === 1}
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          >
-            &lt;
-          </Button>
-          <span>Pág. {page}</span>
-          <Button
-            disabled={channels.length < pageSize}
-            onClick={() => setPage((prev) => prev + 1)}
-          >
-            &gt;
-          </Button>
-          <select
-            className="border rounded p-1 ml-3"
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
-      </div>
+                {/* Hilos solo para el canal seleccionado */}
+                {selectedChannel?.id === ch.id && (
+                  <div className="flex flex-col gap-1 pl-4 mt-1">
+                    {loadingThreads ? (
+                      <P>Cargando hilos...</P>
+                    ) : threads.length === 0 ? (
+                      <P className="text-gray-500">No hay hilos</P>
+                    ) : (
+                      threads.map((th) => (
+                        <Card
+                          key={th.id}
+                          onClick={() => setSelectedThread(th)}
+                          className={`cursor-pointer px-3 py-1 border hover:bg-gray-100 ${
+                            selectedThread?.id === th.id
+                              ? 'bg-gray-200 border-black'
+                              : ''
+                          }`}
+                        >
+                          #{th.title}
+                        </Card>
+                      ))
+                    )}
+
+                    {/* Botón + Crear hilo */}
+                    <button
+                      className="flex items-center justify-start gap-2 px-3 py-1 text-gray-500 hover:bg-gray-200 rounded w-full"
+                      onClick={() => {
+                        const title = prompt('Nombre del nuevo hilo:')
+                        if (!title?.trim()) return
+                        const body = {
+                          channel_id: selectedChannel.id,
+                          title: title.trim(),
+                          created_by: user.id,
+                        }
+                        createThread(body).then((th) => {
+                          if (th) {
+                            setThreads((prev) => [...prev, th])
+                            setSelectedThread(th)
+                            toast.success(`Se creó el hilo "${title.trim()}"`)
+                          }
+                        })
+                      }}
+                    >
+                      <span className="text-lg font-bold">+</span>
+                      <span>Crear hilo</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Sidebar>
 
       {/* Contenido principal */}
       <div className="flex p-4 overflow-auto w-full">
