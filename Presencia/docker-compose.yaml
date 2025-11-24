@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/code
     depends_on:
-      - presencia        # 👈 Ejecuta los tests solo después de que el servicio está levantado
+      - presencia       
     networks:
       - demo_04
   mongodb_presencia:
