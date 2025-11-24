@@ -314,7 +314,7 @@ export const Home = () => {
 
             {selectedThread && (
               <Messages
-                threadId={selectedThread.id}
+                threadId={selectedThread.uuid}
                 threadName={selectedThread.title}
               />
             )}
