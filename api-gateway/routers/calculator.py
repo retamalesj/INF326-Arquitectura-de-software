@@ -60,6 +60,8 @@ async def gw_calc_integrate(request: Request):
             {{
                 resolverIntegral(query: "{query}") {{
                     query
+                    operation
+                    result
                 }}
             }}
             """
@@ -69,7 +71,7 @@ async def gw_calc_integrate(request: Request):
 
     try:
         response = await forward("POST", f"{URLS['calculator']}/integrate/", request, body=body_graphql)
-        solution = response['data']['resolverIntegral']['query']
+        solution = response['data']['resolverIntegral']['result']
     
     except (KeyError, TypeError) as e:
         raise ValueError(f"No se pudo obtener la solución: {e}")
