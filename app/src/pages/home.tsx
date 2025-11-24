@@ -95,6 +95,7 @@ export const Home = () => {
     if (ch) {
       await fetchChannels(page, pageSize)
       setSelectedChannel(ch)
+      setSelectedThread(null)
       setNewChannelName('')
       toast.success(`Se creó el canal ${ch.name} correctamente.`)
     }
@@ -289,13 +290,15 @@ export const Home = () => {
               ) : (
                 <div className="flex items-center space-x-2">
                   <H3>{selectedChannel.name}</H3>
-                  <button
-                    onClick={() => setIsEditingChannel(true)}
-                    className="text-gray-500 hover:text-blue-500 transition"
-                    title="Editar nombre del canal"
-                  >
-                    <FiEdit className="w-5 h-5" />
-                  </button>
+                  {isChannelOwner && (
+                    <button
+                      onClick={() => setIsEditingChannel(true)}
+                      className="text-gray-500 hover:text-blue-500 transition"
+                      title="Editar nombre del canal"
+                    >
+                      <FiEdit className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               )}
               <P>
