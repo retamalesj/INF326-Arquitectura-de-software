@@ -48,8 +48,11 @@ async def forward(method: str, url: str, request: Request, body=None, params=Non
                 detail = r.text
             raise HTTPException(status_code=r.status_code, detail=detail)
 
-        return Response(content=r.content, media_type=r.headers.get("content-type", "application/octet-stream"), status_code=r.status_code)
-
+        try:
+            return r.json()
+        except Exception:
+            return r.text
+    
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Gateway Timeout: El microservicio tardó demasiado.")
     except httpx.RequestError as e:
