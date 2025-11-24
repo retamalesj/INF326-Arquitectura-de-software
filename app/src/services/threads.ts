@@ -9,7 +9,9 @@ export interface CreateThreadDTO {
   metadata?: Record<string, any>
 }
 
-export const createThread = async (body: CreateThreadDTO): Promise<string | null> => {
+export const createThread = async (
+  body: CreateThreadDTO,
+): Promise<string | null> => {
   try {
     const response = await fetch(`${API_GATEWAY_URL}/threads`, {
       method: 'POST',
@@ -28,7 +30,8 @@ export const createThread = async (body: CreateThreadDTO): Promise<string | null
 export const getThreadById = async (channelId: string): Promise<any | null> => {
   try {
     const response = await fetch(`${API_GATEWAY_URL}/threads/${channelId}`)
-    if (!response.ok) throw new Error(`Error obteniendo hilo: ${response.status}`)
+    if (!response.ok)
+      throw new Error(`Error obteniendo hilo: ${response.status}`)
     return await response.json()
   } catch (error) {
     console.error('Error obteniendo hilo:', error)
@@ -38,8 +41,11 @@ export const getThreadById = async (channelId: string): Promise<any | null> => {
 
 export const deleteThread = async (threadId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads/${threadId}`, { method: 'DELETE' })
-    if (!response.ok) throw new Error(`Error eliminando hilo: ${response.status}`)
+    const response = await fetch(`${API_GATEWAY_URL}/threads/${threadId}`, {
+      method: 'DELETE',
+    })
+    if (!response.ok)
+      throw new Error(`Error eliminando hilo: ${response.status}`)
     return true
   } catch (error) {
     console.error('Error eliminando hilo:', error)
@@ -52,13 +58,19 @@ export interface EditThreadDTO {
   metadata?: Record<string, any>
 }
 
-export const editThread = async (threadId: string, body: EditThreadDTO): Promise<string | null> => {
+export const editThread = async (
+  threadId: string,
+  body: EditThreadDTO,
+): Promise<string | null> => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads/${threadId}/edit`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
+    const response = await fetch(
+      `${API_GATEWAY_URL}/threads/${threadId}/edit`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    )
     if (!response.ok) throw new Error(`Error editando hilo: ${response.status}`)
     return await response.text()
   } catch (error) {
@@ -68,15 +80,20 @@ export const editThread = async (threadId: string, body: EditThreadDTO): Promise
 }
 
 export interface ThreadSummary {
+  thread_id: string
   title: string
   created_by: string
-  channel_id: string
 }
 
-export const getThreadsByChannel = async (channelId: string): Promise<ThreadSummary[] | null> => {
+export const getThreadsByChannel = async (
+  channelId: string,
+): Promise<ThreadSummary[] | null> => {
   try {
-    const response = await fetch(`${API_GATEWAY_URL}/threads/by-channel?channel_id=${channelId}`)
-    if (!response.ok) throw new Error(`Error obteniendo hilos: ${response.status}`)
+    const response = await fetch(
+      `${API_GATEWAY_URL}/threads/channel/get_threads?channel_id=${channelId}`,
+    )
+    if (!response.ok)
+      throw new Error(`Error obteniendo hilos: ${response.status}`)
     return await response.json()
   } catch (error) {
     console.error('Error obteniendo hilos:', error)
