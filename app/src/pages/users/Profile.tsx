@@ -30,7 +30,7 @@ export const Profile = () => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-4 mt-8">
+    <div className="flex flex-col items-center space-y-4 mt-8 w-full h-full">
       {/* Avatar con borde degradado */}
       <div className="w-28 h-28 border-4 rounded-full bg-gradient-to-tr from-teal-400 via-blue-500 to-purple-500 p-1">
         <Avatar className="w-full h-full">

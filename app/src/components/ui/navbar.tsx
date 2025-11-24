@@ -30,6 +30,11 @@ export const Navbar = () => {
                 Chatbots
               </Button>
             </Link>
+            <Link to="/perfil">
+              <Button variant="outline" size="sm">
+                Mi perfil
+              </Button>
+            </Link>
 
             <span className="text-gray-700 font-medium">
               Hola, {user.full_name}
