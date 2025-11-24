@@ -1,4 +1,4 @@
-import { API_GATEWAY_URL } from "../constants"
+import { API_GATEWAY_URL } from '../constants'
 
 export interface Message {
   id: string
@@ -10,38 +10,51 @@ export interface Message {
 
 export interface CreateMessageDTO {
   content: string
-  type?: "text" | "file"
-  paths?: string[]
+  type: 'text' | 'file'
+  paths: string[]
 }
 
 /** Obtener mensajes de un hilo */
-export const getMessages = async (threadId: string): Promise<Message[] | null> => {
+export const getMessages = async (
+  threadId: string,
+): Promise<Message[] | null> => {
   try {
-    const res = await fetch(`${API_GATEWAY_URL}/messages/threads/${threadId}/messages?limit=50`)
+    const res = await fetch(
+      `${API_GATEWAY_URL}/messages/threads/${threadId}/messages?limit=50`,
+    )
+
     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`)
     const data = await res.json()
+
     return data.items || []
   } catch (err) {
-    console.error("Error obteniendo mensajes:", err)
+    console.error('Error obteniendo mensajes:', err)
     return null
   }
 }
 
 /** Enviar mensaje a un hilo */
-export const sendMessage = async (threadId: string, userId: string, body: CreateMessageDTO) => {
+export const sendMessage = async (
+  threadId: string,
+  userId: string,
+  body: CreateMessageDTO,
+) => {
   try {
-    const res = await fetch(`${API_GATEWAY_URL}/messages/threads/${threadId}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": userId,
+    const res = await fetch(
+      `${API_GATEWAY_URL}/messages/threads/${threadId}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    })
+    )
     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`)
-    return await res.json()
+    return await res.text()
   } catch (err) {
-    console.error("Error enviando mensaje:", err)
+    console.error('Error enviando mensaje:', err)
     return null
   }
 }
