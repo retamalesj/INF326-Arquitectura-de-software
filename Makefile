@@ -42,3 +42,14 @@ status:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml get ingress
 	@echo ""
 	@echo "-------------------------------------------------------------------------------------------------------"
+
+build-api-gateway:
+	docker build -t doorkaz/api-gateway:latest api-gateway/
+	docker push doorkaz/api-gateway:latest
+
+deploy-api-gateway:
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/api-gateway-service.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/api-gateway-deployment.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/api-gateway-ingress.yaml
+
+	@echo "API Gateway desplegado correctamente!"
