@@ -17,6 +17,7 @@ import {
 import { createThread, getThreadsByChannel } from '../services/threads'
 import { toast } from 'sonner'
 import { FiEdit, FiCheck, FiX } from 'react-icons/fi'
+import { MessageSidebar } from './chats/chats'
 
 export const Home = () => {
   const { user, loading: authLoading } = useContext(AuthContext)
@@ -26,7 +27,6 @@ export const Home = () => {
 
   const [threads, setThreads] = useState<any[]>([])
   const [loadingThreads, setLoadingThreads] = useState(false)
-  const [newThreadTitle, setNewThreadTitle] = useState('')
   const [selectedThread, setSelectedThread] = useState<any | null>(null)
 
   const [newChannelName, setNewChannelName] = useState('')
@@ -302,6 +302,8 @@ export const Home = () => {
                 Eliminar canal
               </Button>
             </div>
+
+            {selectedThread && <MessageSidebar threadId={selectedThread.id} />}
           </div>
         ) : (
           <P className="text-gray-500">Selecciona un canal para ver detalles</P>

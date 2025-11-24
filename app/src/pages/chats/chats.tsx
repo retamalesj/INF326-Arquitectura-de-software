@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -10,13 +10,17 @@ import {
   type Message,
   type CreateMessageDTO,
 } from '../../services/chats'
+import { AuthContext } from '@/context/AuthContext'
 
 interface MessageSidebarProps {
   threadId: string
-  userId: string
 }
 
-export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
+export const MessageSidebar = ({ threadId }: MessageSidebarProps) => {
+  const { user } = useContext(AuthContext)
+  
+  if (!user) return
+
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [newMessage, setNewMessage] = useState('')
@@ -30,7 +34,7 @@ export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
 
   const handleSend = async (msg: string) => {
     const body: CreateMessageDTO = { content: msg, type: 'text', paths: [] }
-    await sendMessage(threadId, userId, body)
+    await sendMessage(threadId, user.id, body)
     fetchMessages()
   }
 
@@ -58,7 +62,7 @@ export const MessageSidebar = ({ threadId, userId }: MessageSidebarProps) => {
                 <div
                   key={msg.id}
                   className={`px-3 py-1 rounded-md max-w-[80%] ${
-                    msg.user_id === userId
+                    msg.user_id === user.id
                       ? 'bg-blue-600 text-white self-end'
                       : 'bg-gray-200 text-black self-start'
                   }`}
