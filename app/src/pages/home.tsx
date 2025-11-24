@@ -126,6 +126,8 @@ export const Home = () => {
     }
   }
 
+  const isChannelOwner = selectedChannel?.owner_id == user.id
+
   return (
     <div className="flex w-full">
       {/* Sidebar de canales */}
@@ -306,11 +308,13 @@ export const Home = () => {
             </div>
 
             {/* Botones de acción */}
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleDeleteChannel}>
-                Eliminar canal
-              </Button>
-            </div>
+            {isChannelOwner && (
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={handleDeleteChannel}>
+                  Eliminar canal
+                </Button>
+              </div>
+            )}
 
             {selectedThread && (
               <Messages
