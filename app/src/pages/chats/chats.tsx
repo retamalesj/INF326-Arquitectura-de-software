@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { P } from '@/components/ui/typography'
+import { H4, P } from '@/components/ui/typography'
 import {
   getMessages,
   sendMessage,
@@ -14,9 +14,10 @@ import { AuthContext } from '@/context/AuthContext'
 
 interface MessagesProps {
   threadId: string
+  threadName: string
 }
 
-export const Messages = ({ threadId }: MessagesProps) => {
+export const Messages = ({ threadId, threadName }: MessagesProps) => {
   const { user } = useContext(AuthContext)
 
   if (!user) return
@@ -47,7 +48,8 @@ export const Messages = ({ threadId }: MessagesProps) => {
   return (
     <Card className="flex flex-col bg-gray-50 border-l border-gray-200 w-full">
       <CardContent className="flex-1 flex flex-col">
-        <ScrollArea className="flex-1 mb-4">
+        <H4>#{threadName}</H4>
+        <ScrollArea className="flex-1 mt-4 mb-4">
           <div className="flex flex-col gap-2">
             {loading ? (
               <P>Cargando...</P>
@@ -72,7 +74,6 @@ export const Messages = ({ threadId }: MessagesProps) => {
             )}
           </div>
         </ScrollArea>
-
         <div className="flex gap-2">
           <Input
             placeholder="Escribe un mensaje..."

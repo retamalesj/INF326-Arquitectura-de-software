@@ -312,7 +312,12 @@ export const Home = () => {
               </Button>
             </div>
 
-            {selectedThread && <Messages threadId={selectedThread.id} />}
+            {selectedThread && (
+              <Messages
+                threadId={selectedThread.id}
+                threadName={selectedThread.title}
+              />
+            )}
           </div>
         ) : (
           <P className="text-gray-500">Selecciona un canal para ver detalles</P>
