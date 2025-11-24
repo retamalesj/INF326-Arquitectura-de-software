@@ -15,12 +15,31 @@ async def gw_calc_solve(request: Request):
     Output:   { "query": "...", "solution": [-5, 5] }
     """
     try:
-        # Validamos que el body sea JSON válido antes de enviarlo
-        body = await request.json()
+        body_request = await request.json()
+        query = body_request.get("query", "")
+
+        body_graphql = {
+            "query": f"""
+            {{
+                resolverEcuacion(query: "{query}") {{
+                    query
+                    solution
+                }}
+            }}
+            """
+        }
+
     except Exception:
         raise HTTPException(status_code=400, detail="El cuerpo debe ser un JSON válido")
 
-    return await forward("POST", f"{URLS['calculator']}/solve/", request, body=body)
+    try:
+        response = await forward("POST", f"{URLS['calculator']}/solve/", request, body=body_graphql)
+        solution = response['data']['resolverEcuacion']['solution']
+    
+    except (KeyError, TypeError) as e:
+        raise ValueError(f"No se pudo obtener la solución: {e}")
+
+    return { "solutions": solution }
 
 
 # ---------------------------------------------------------
@@ -33,12 +52,29 @@ async def gw_calc_integrate(request: Request):
     Input UI: { "query": "x**2" } (Asume integración respecto a x)
     """
     try:
-        body = await request.json()
+        body_request = await request.json()
+        query = body_request.get("query", "")
+
+        body_graphql = {
+            "query": f"""
+            {{
+                resolverIntegral(query: "{query}") {{
+                    query
+                }}
+            }}
+            """
+        }
     except Exception:
         raise HTTPException(status_code=400, detail="El cuerpo debe ser un JSON válido")
 
-    return await forward("POST", f"{URLS['calculator']}/integrate/", request, body=body)
+    try:
+        response = await forward("POST", f"{URLS['calculator']}/integrate/", request, body=body_graphql)
+        solution = response['data']['resolverIntegral']['query']
+    
+    except (KeyError, TypeError) as e:
+        raise ValueError(f"No se pudo obtener la solución: {e}")
 
+    return { "solutions": solution }
 
 # ---------------------------------------------------------
 # Calculo Diferencial
@@ -49,8 +85,29 @@ async def gw_calc_derive(request: Request):
     Input UI: { "query": "x**2" } -> Output esperado: "2*x"
     """
     try:
-        body = await request.json()
+        body_request = await request.json()
+        query = body_request.get("query", "")
+
+        body_graphql = {
+            "query": f"""
+            {{
+                resolverDerivada(query: "{query}") {{
+                    query
+                    operation
+                    result
+                }}
+            }}
+            """
+        }
+
     except Exception:
         raise HTTPException(status_code=400, detail="El cuerpo debe ser un JSON válido")
 
-    return await forward("POST", f"{URLS['calculator']}/derive/", request, body=body)
+    try:
+        response = await forward("POST", f"{URLS['calculator']}/derive/", request, body=body_graphql)
+        solution = response['data']['resolverDerivada']['result']
+    
+    except (KeyError, TypeError) as e:
+        raise ValueError(f"No se pudo obtener la solución: {e}")
+
+    return { "solutions": solution }
