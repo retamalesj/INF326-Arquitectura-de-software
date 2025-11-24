@@ -1,14 +1,16 @@
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { H1 } from "@/components/ui/typography"
-import { queryWikipediaChat } from "@/services/wikipedia_chatbot"
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { H1 } from '@/components/ui/typography'
+import { queryWikipediaChat } from '@/services/wikipedia_chatbot'
 
-export function ChatBubble() {
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([])
-  const [input, setInput] = useState("")
+export const WikipediaChatbot = () => {
+  const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
+    [],
+  )
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
 
   const formatMessage = (text: string) => {
@@ -34,16 +36,16 @@ export function ChatBubble() {
   const handleSend = async () => {
     if (!input.trim()) return
 
-    const userMsg = { sender: "user", text: input }
+    const userMsg = { sender: 'user', text: input }
     setMessages((prev) => [...prev, userMsg])
-    setInput("")
+    setInput('')
     setLoading(true)
 
     const response = await queryWikipediaChat({ message: input })
 
     const botMsg = response
-      ? { sender: "bot", text: response.message }
-      : { sender: "bot", text: "⚠️ Error procesando la solicitud." }
+      ? { sender: 'bot', text: response.message }
+      : { sender: 'bot', text: '⚠️ Error procesando la solicitud.' }
 
     setMessages((prev) => [...prev, botMsg])
     setLoading(false)
@@ -62,9 +64,10 @@ export function ChatBubble() {
               <div
                 key={i}
                 className={`max-w-[75%] px-3 py-2 rounded-xl text-sm shadow
-                  ${msg.sender === "user"
-                    ? "self-end bg-primary text-white"
-                    : "self-start bg-muted"
+                  ${
+                    msg.sender === 'user'
+                      ? 'self-end bg-primary text-white'
+                      : 'self-start bg-muted'
                   }`}
               >
                 {formatMessage(msg.text)}
@@ -78,11 +81,11 @@ export function ChatBubble() {
             placeholder="Escribe tu mensaje..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             disabled={loading}
           />
           <Button onClick={handleSend} disabled={loading}>
-            {loading ? "..." : "Enviar"}
+            {loading ? '...' : 'Enviar'}
           </Button>
         </div>
       </CardContent>

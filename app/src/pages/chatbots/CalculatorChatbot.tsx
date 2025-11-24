@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { Calculator as CalcIcon, Shield } from 'lucide-react'
 import { API_GATEWAY_URL } from '@/constants'
 
-// --- CORRECCIÓN: Usamos 'export function' (SIN default) para que funcione el import { Calculator } ---
-export function Calculator() {
+export const CalculatorChatbot = () => {
   useEffect(() => {
     console.log('--- Componente Calculator MONTADO ---')
   }, [])

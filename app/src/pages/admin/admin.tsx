@@ -12,9 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { H1, P } from '@/components/ui/typography'
+import { H1 } from '@/components/ui/typography'
 import { toast } from 'sonner'
-import { ChatBubble } from '../chats/wikichat'
 
 const API_PREFIX = '/api/presence-gateway/moderation/api/v1'
 
@@ -233,7 +232,6 @@ export const ModerationAdminPage = () => {
               ))}
             </TableBody>
           </Table>
-          <ChatBubble />
         </CardContent>
       </Card>
     </div>
