@@ -15,7 +15,7 @@ import { Chatbots } from './pages/Chatbots'
 function App() {
   return (
     <AuthProvider>
-      <Toaster />
+      <Toaster position="top-right" />
       <Router>
         <Routes>
           {/* Rutas públicas para usuarios no autenticados */}

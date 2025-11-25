@@ -1,8 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { H2, H3, P } from '@/components/ui/typography'
+import { H3, P } from '@/components/ui/typography'
 import { Input } from '@/components/ui/input'
 import { AuthContext } from '../context/AuthContext'
 import {
@@ -17,7 +16,7 @@ import {
 import { createThread, getThreadsByChannel } from '../services/threads'
 import { toast } from 'sonner'
 import { FiEdit, FiCheck, FiX } from 'react-icons/fi'
-import { MessageSidebar } from './chats/chats'
+import { Messages } from './chats/chats'
 import { Sidebar } from '@/components/ui/sidebar'
 
 export const Home = () => {
@@ -96,6 +95,7 @@ export const Home = () => {
     if (ch) {
       await fetchChannels(page, pageSize)
       setSelectedChannel(ch)
+      setSelectedThread(null)
       setNewChannelName('')
       toast.success(`Se creó el canal ${ch.name} correctamente.`)
     }
@@ -126,6 +126,8 @@ export const Home = () => {
       })
     }
   }
+
+  const isChannelOwner = selectedChannel?.owner_id == user.id
 
   return (
     <div className="flex w-full">
@@ -186,7 +188,7 @@ export const Home = () => {
                   }
                   className={`justify-start ${
                     selectedChannel?.id === ch.id
-                      ? ''
+                      ? 'bg-blue-600'
                       : 'border-1 border-gray-300'
                   }`}
                   onClick={() => setSelectedChannel(ch)}
@@ -208,7 +210,7 @@ export const Home = () => {
                           onClick={() => setSelectedThread(th)}
                           className={`cursor-pointer px-3 py-1 border hover:bg-gray-100 ${
                             selectedThread?.id === th.id
-                              ? 'bg-gray-200 border-black'
+                              ? 'border-neutral-300'
                               : ''
                           }`}
                         >
@@ -225,12 +227,20 @@ export const Home = () => {
                         if (!title?.trim()) return
                         const body = {
                           channel_id: selectedChannel.id,
-                          title: title.trim(),
-                          created_by: user.id,
+                          thread_name: title.trim(),
+                          user_id: user.id,
                         }
+
                         createThread(body).then((th) => {
                           if (th) {
-                            setThreads((prev) => [...prev, th])
+                            setThreads((prev) => [
+                              ...prev,
+                              {
+                                thread_id: th.thread_id,
+                                title: th.title,
+                                created_by: th.created_by,
+                              },
+                            ])
                             setSelectedThread(th)
                             toast.success(`Se creó el hilo "${title.trim()}"`)
                           }
@@ -280,13 +290,15 @@ export const Home = () => {
               ) : (
                 <div className="flex items-center space-x-2">
                   <H3>{selectedChannel.name}</H3>
-                  <button
-                    onClick={() => setIsEditingChannel(true)}
-                    className="text-gray-500 hover:text-blue-500 transition"
-                    title="Editar nombre del canal"
-                  >
-                    <FiEdit className="w-5 h-5" />
-                  </button>
+                  {isChannelOwner && (
+                    <button
+                      onClick={() => setIsEditingChannel(true)}
+                      className="text-gray-500 hover:text-blue-500 transition"
+                      title="Editar nombre del canal"
+                    >
+                      <FiEdit className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               )}
               <P>
@@ -299,13 +311,20 @@ export const Home = () => {
             </div>
 
             {/* Botones de acción */}
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleDeleteChannel}>
-                Eliminar canal
-              </Button>
-            </div>
+            {isChannelOwner && (
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={handleDeleteChannel}>
+                  Eliminar canal
+                </Button>
+              </div>
+            )}
 
-            {selectedThread && <MessageSidebar threadId={selectedThread.id} />}
+            {selectedThread && (
+              <Messages
+                threadId={selectedThread.uuid}
+                threadName={selectedThread.title}
+              />
+            )}
           </div>
         ) : (
           <P className="text-gray-500">Selecciona un canal para ver detalles</P>

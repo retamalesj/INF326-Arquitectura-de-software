@@ -8,7 +8,7 @@ URLS = {
   "moderation": "https://moderation.inf326.nur.dev/api/v1",
   "search": "https://searchservice.inf326.nursoft.dev",
   "files": "http://file-service-134-199-176-197.nip.io",
-  "threads": "https://threads.inf326.nursoft.dev",
+  "threads": "https://threads.inf326.nursoft.dev/threads",
   "wikipedia": "https://wikipedia-chatbot.inf326.nursoft.dev/",
   "programming-chatbot": "https://chatbotprogra.inf326.nursoft.dev",
   "calculator": "https://calculadora.inf326.nursoft.dev",

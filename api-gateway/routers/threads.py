@@ -19,8 +19,8 @@ async def list_threads(request: Request):
 # -------------------------
 @router.post("/")
 async def create_thread(request: Request):
-    return await forward("POST", f"{URLS['threads']}/threads", request)
-
+    params = dict(request.query_params)
+    return await forward("POST", f"{URLS['threads']}/threads/", request, params=params)
 
 # -------------------------
 # Buscar hilo por ID

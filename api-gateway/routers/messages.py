@@ -9,7 +9,6 @@ router = APIRouter(prefix="/messages", tags=["Messages"])
 async def gw_create_message(
     request: Request,
     thread_id: str = Path(...),
-    x_user_id: str = Header(..., alias="X-User-Id"),
 ):
     body = await request.json()
     return await forward(
@@ -17,7 +16,6 @@ async def gw_create_message(
         f"{URLS['messages']}/threads/{thread_id}/messages",
         request,
         body=body,
-        headers={"X-User-Id": x_user_id},
     )
 
 # List Messages
