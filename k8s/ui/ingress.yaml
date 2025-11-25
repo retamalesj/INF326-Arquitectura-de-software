@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ui-presence-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+      - ui-presence.inf326.nursoft.dev
+    secretName: ui-presence-tls
+  rules:
+  - host: ui-presence.inf326.nursoft.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ui-presence-service
+            port:
+              number: 80

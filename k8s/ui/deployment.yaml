@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-presence
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ui-presence
+  template:
+    metadata:
+      labels:
+        app: ui-presence
+    spec:
+      containers:
+        - name: ui-presence
+          image: doorkaz/ui-presence:latest
+          ports:
+            - containerPort: 80

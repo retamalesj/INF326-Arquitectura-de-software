@@ -23,7 +23,6 @@ import {
   getUserModerationStatus,
   getUserViolations,
   moderationAnalyze,
-  moderationCheck,
   type BlacklistWord,
   type BannedUser,
 } from '@/services/moderation'
@@ -85,9 +84,6 @@ export default function ModerationAdminPage() {
     loadBannedUsers()
   }
 
-  const [banTarget, setBanTarget] = useState('')
-  const [banReason, setBanReason] = useState('')
-  const [banExpiry, setBanExpiry] = useState('')
   /*
   const handleBan = async () => {
     if (!banTarget.trim() || !banReason.trim())
@@ -131,21 +127,6 @@ export default function ModerationAdminPage() {
   const handleAnalyze = async () => {
     const res = await moderationAnalyze({ text: textToAnalyze })
     setAnalysisResult(res)
-  }
-
-  /* ------------------ MESSAGE CHECK ------------------ */
-  const [checkUserId, setCheckUserId] = useState('')
-  const [checkChannelId, setCheckChannelId] = useState('')
-  const [checkMessage, setCheckMessage] = useState('')
-  const [checkResult, setCheckResult] = useState(null)
-
-  const handleCheck = async () => {
-    const res = await moderationCheck({
-      user_id: checkUserId,
-      channel_id: checkChannelId,
-      message: checkMessage,
-    })
-    setCheckResult(res)
   }
 
   /* ------------------ INITIAL LOAD ------------------ */
