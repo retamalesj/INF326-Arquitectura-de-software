@@ -181,7 +181,7 @@ export const getBannedUsers = async (
     const apiKey = "your-admin-api-key-change-in-production"
 
     const res = await fetch(
-      `${API_GATEWAY_URL}/moderation/admin/banned-users?page=${page}&limit=${limit}`,
+      `${API_GATEWAY_URL}/admin/banned-users?page=${page}&limit=${limit}`,
       {
         headers: {
           "X-API-Key": apiKey,
