@@ -15,7 +15,9 @@ export const Navbar = () => {
 
   return (
     <nav className="w-full py-4 px-6 flex justify-between items-center shadow-md bg-white">
-      <h1 className="text-2xl font-bold text-blue-800">CHAT USM</h1>
+      <Link to="/administrador">
+        <h1 className="text-2xl font-bold text-blue-800">CHAT USM</h1>
+      </Link>
 
       <div className="flex flex-row gap-4 items-center">
         {user ? (

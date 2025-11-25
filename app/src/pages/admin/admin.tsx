@@ -29,7 +29,7 @@ import {
 import { AuthContext } from '@/context/AuthContext'
 import { H2, H3 } from '@/components/ui/typography'
 
-export default function ModerationAdminPage() {
+export const ModerationAdminPage = () => {
   const { token } = useContext(AuthContext)
 
   /* ------------------ BLACKLIST ------------------ */

@@ -6,11 +6,11 @@ import { Profile } from './pages/users/Profile'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { GuestRoute } from './routes/GuestRoute'
-import ModerationAdminPage from './pages/admin/admin'
 import { Home } from './pages/home'
 import { Toaster } from '@/components/ui/sonner'
 import { Register } from './pages/users/Register'
 import { Chatbots } from './pages/Chatbots'
+import { ModerationAdminPage } from './pages/admin/admin'
 
 function App() {
   return (
@@ -71,7 +71,7 @@ function App() {
               }
             />
             <Route
-              path="/admin"
+              path="/administrador"
               element={
                 <ProtectedRoute>
                   <ModerationAdminPage />
