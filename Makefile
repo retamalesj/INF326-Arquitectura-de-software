@@ -58,3 +58,21 @@ clean-api-gateway:
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-service.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-deployment.yaml
 	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/api-gateway-ingress.yaml
+
+build-ui:
+	docker build -t doorkaz/ui-presence:latest app/
+	docker push doorkaz/ui-presence:latest
+
+deploy-ui:
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/ui/service.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/ui/deployment.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml apply -f k8s/ui/ingress.yaml
+
+	@echo "Desplegado correctamente!"
+
+clean-ui:
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/ui/service.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/ui/deployment.yaml
+	kubectl --kubeconfig k8s/k8s-inf326-nyc1-kubeconfig-2.yaml delete -f k8s/ui/ingress.yaml
+	
+	@echo "OK, eliminado!"
