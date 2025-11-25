@@ -1,4 +1,5 @@
 def test_delete_success(client):
+    
     resp = client.delete("/api/v1.0.0/presence/u1")
     assert resp.status_code == 200
     body = resp.json()
